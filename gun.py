@@ -6,9 +6,9 @@ import random
 class Gun:
     def __init__(self, screen):
         self.screen = screen
-        self.bullet_width = 15
-        self.bullet_height = 7.5
-        self.bullet_color = (255, 0, 0)
+        self.bullet_width = 10
+        self.bullet_height = 10
+        self.bullet_color = (0, 0, 0)
         self.bullet_speed = 10
         self.bullets = []  # Each bullet will be a tuple (rect, speed)
 

@@ -21,9 +21,14 @@ Clock = pygame.time.Clock()
 player_idle1_surf = pygame.image.load("Graphics/player/playeridle1.png").convert_alpha()
 player_idle2_surf = pygame.image.load("Graphics/player/playeridle2.png").convert_alpha()
 player_idle3_surf = pygame.image.load("Graphics/player/playeridle3.png").convert_alpha()
-player_jump0_surf = pygame.image.load("Graphics/player/playerjump0.png").convert_alpha()
-player_jump1_surf = pygame.image.load("Graphics/player/playerjump1.png").convert_alpha()
-player_jump2_surf = pygame.image.load("Graphics/player/playerjump2.png").convert_alpha()
+player_walkup_surf = pygame.image.load("Graphics/player/playerwalkup.png").convert_alpha()
+player_walkup1_surf = pygame.image.load("Graphics/player/playerwalkup1.png").convert_alpha()
+player_walkup2_surf = pygame.image.load("Graphics/player/playerwalkup2.png").convert_alpha()
+player_walkdown_surf = pygame.image.load("Graphics/player/playerwalkdown.png").convert_alpha()
+player_walkdown1_surf = pygame.image.load("Graphics/player/playerwalkdown1.png").convert_alpha()
+player_walkdown2_surf = pygame.image.load("Graphics/player/playerwalkdown2.png").convert_alpha()
+player_walkdown3_surf = pygame.image.load("Graphics/player/playerwalkdow3.png").convert_alpha()
+
 
 player_walkleft1_surf = pygame.image.load("Graphics/player/playerwalkleft1.png").convert_alpha()
 player_walkleft2_surf = pygame.image.load("Graphics/player/playerwalkleft2.png").convert_alpha()
@@ -34,7 +39,8 @@ player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png
 
 
 # Set player_rect and initial player_surf to idle surface
-playerjumplist = [player_jump1_surf, player_jump2_surf]
+playerwalkdownlist = [player_walkdown_surf, player_walkdown1_surf, player_walkdown2_surf, player_walkdown3_surf]
+playerwalkuplist = [player_walkup_surf, player_walkup1_surf, player_walkup2_surf]
 playeridlelist = [player_idle1_surf, player_idle2_surf, player_idle3_surf]
 playerwalkleftlist = [player_walkleft1_surf, player_walkleft2_surf, player_walkleft3_surf]
 playerwalkrightlist = [player_walkright1_surf, player_walkright2_surf, player_walkright3_surf]
@@ -53,9 +59,11 @@ on_platform = False
 walk_frame = 0
 walk_animation_speed = 7
 idle_index = 0
-animation_speed = 0.2
+animation_speed = 0.15
 left_index = 0
 right_index = 0
+up_index = 0
+down_index = 0
 gun = Gun(screen)
 
 frame = screen.get_rect()
@@ -159,6 +167,16 @@ while running:
         right_index += animation_speed
         if right_index >= len(playerwalkrightlist):
              right_index = 0
+    elif moving_up:
+        player_surf = playerwalkuplist[int(up_index)]
+        up_index += animation_speed
+        if up_index >= len(playerwalkuplist):
+            up_index = 0
+    elif moving_down:
+        player_surf = playerwalkdownlist[int(down_index)]
+        down_index += animation_speed
+        if down_index >= len(playerwalkdownlist):
+            down_index = 0
     else:
         player_surf = playeridlelist[int(idle_index)]
         idle_index += animation_speed
