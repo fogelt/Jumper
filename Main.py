@@ -16,7 +16,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Edvins Spel")
 Clock = pygame.time.Clock()
 
-
 # Load player images for different states (idle and jump)
 player_idle1_surf = pygame.image.load("Graphics/player/playeridle1.png").convert_alpha()
 player_idle2_surf = pygame.image.load("Graphics/player/playeridle2.png").convert_alpha()
@@ -39,6 +38,8 @@ player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png
 
 
 # Set player_rect and initial player_surf to idle surface
+coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alpha() for i in range(18)]
+coin_surf = coinanimlist[0]
 playerwalkdownlist = [player_walkdown_surf, player_walkdown1_surf, player_walkdown2_surf, player_walkdown3_surf]
 playerwalkuplist = [player_walkup_surf, player_walkup1_surf, player_walkup2_surf]
 playeridlelist = [player_idle1_surf, player_idle2_surf, player_idle3_surf]
@@ -64,6 +65,7 @@ left_index = 0
 right_index = 0
 up_index = 0
 down_index = 0
+coin_index = 0
 gun = Gun(screen)
 
 frame = screen.get_rect()
@@ -74,6 +76,7 @@ snail_surf = pygame.image.load("Graphics/foes/snail1.png")
 
 
 snails = []
+coins = []
 
 
 
@@ -122,18 +125,15 @@ while running:
                 moving_down = True
 
             if event.key == pygame.K_e:
-                # Get mouse position
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                # Shoot a bullet towards the mouse position
                 bullet_speed_x, bullet_speed_y = gun.shoot(player_render_rect, mouse_x, mouse_y)
 
-                # Inside the loop where you handle bullet movement
                 for bullet, speed in gun.bullets:
-                    bullet.x += speed[0]  # Move bullet horizontally
-                    bullet.y += speed[1]  # Move bullet vertically
+                    bullet.x += speed[0]
+                    bullet.y += speed[1]
                     pygame.draw.rect(screen, gun.bullet_color, bullet)
 
-        elif event.type == pygame.KEYUP:
+        if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 moving_left = False
             if event.key == pygame.K_d:
@@ -143,7 +143,6 @@ while running:
             if event.key == pygame.K_s:
                 moving_down = False
 
-    # Move the player horizontally based on the state of the flags
     if moving_left:
         player_rect.x -= player_speed
     if moving_right:
@@ -152,8 +151,6 @@ while running:
         player_rect.y -= player_speed
     if moving_down:
         player_rect.y += player_speed
-
-
 
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -182,6 +179,10 @@ while running:
         idle_index += animation_speed
         if idle_index >= len(playeridlelist):
             idle_index = 0
+    coin_surf = coinanimlist[int(coin_index)]
+    coin_index += animation_speed
+    if coin_index >= len(coinanimlist):
+        coin_index = 0
 
 ###CAMERA####
 
@@ -190,22 +191,20 @@ while running:
 
     for tile in tiles:
         if tile.image == water_image:
-            # Adjust tile position relative to the camera
             tile_rect = tile.rect.move(camera.topleft)
             if player_rect.colliderect(tile_rect):
-                # Perform collision handling
                 if moving_left and player_rect.left < tile_rect.right:
                     moving_left = False
-                    player_rect.x += 40
+                    player_rect.x += 50
                 if moving_right and player_rect.right > tile_rect.left:
                     moving_right = False
-                    player_rect.x -= 40
+                    player_rect.x -= 50
                 if moving_up and player_rect.top < tile_rect.bottom:
                     moving_up = False
-                    player_rect.y += 40
+                    player_rect.y += 50
                 if moving_down and player_rect.bottom > tile_rect.top:
                     moving_down = False
-                    player_rect.y -= 40
+                    player_rect.y -= 50
 
     player_render_rect = player_rect.move(-camera.x, -camera.y)
 
@@ -236,10 +235,20 @@ while running:
             snail.rect = snail_rect
             snails.append(snail)
 
-    gun.check_collisions(snails, camera)
 
+    coin_rect = coin_surf.get_rect()
+
+    adjusted_coin_rects = [coin.move(-camera.x, -camera.y) for coin in coins]
+    index = player_render_rect.collidelist(adjusted_coin_rects)
+    if index != -1:
+        coins.pop(index)
+
+
+
+    gun.check_collisions(snails, camera, coins, coin_rect)
+    for coin in coins:
+        screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
     screen.blit(player_surf, player_render_rect)
-    #screen.blit(player_surf, player_rect)
     gun.update()
     # Remove bullets that have gone off the screen
     gun.remove_bullets_off_screen()

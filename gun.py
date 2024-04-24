@@ -36,14 +36,15 @@ class Gun:
         self.bullets = [(bullet, speed) for bullet, speed in self.bullets if
                         bullet.x < 800]  # Adjust 800 according to your screen width
 
-    def check_collisions(self, snails, camera):
+    def check_collisions(self, snails, camera, coins, coin_rect):
         for bullet, _ in self.bullets[:]:
             adjusted_snail_rects = [snail.rect.move(-camera.x, -camera.y) for snail in snails]
             index = bullet.collidelist(adjusted_snail_rects)
             if index != -1:  # If collision detected
                 self.bullets.remove((bullet, _))
-                snails.pop(index)
-
-
+                removed_snail = snails.pop(index)
+                coin_rect.x = removed_snail.rect.x
+                coin_rect.y = removed_snail.rect.y
+                coins.append(coin_rect)
 
                 break

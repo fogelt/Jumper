@@ -1,7 +1,6 @@
 import pygame
 import math
 
-
 class Enemy:
     def __init__(self, rect, target):
         self.rect = rect
