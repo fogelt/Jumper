@@ -16,6 +16,11 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Edvins Spel")
 Clock = pygame.time.Clock()
 
+shooting_sound = pygame.mixer.Sound("Sounds/flaunch.wav")
+coin1sound = pygame.mixer.Sound("Sounds/coin.wav")
+coin2sound = pygame.mixer.Sound("Sounds/coin2.wav")
+coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
+
 # Load player images for different states (idle and jump)
 player_idle1_surf = pygame.image.load("Graphics/player/playeridle1.png").convert_alpha()
 player_idle2_surf = pygame.image.load("Graphics/player/playeridle2.png").convert_alpha()
@@ -40,6 +45,7 @@ player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png
 # Set player_rect and initial player_surf to idle surface
 coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alpha() for i in range(18)]
 coin_surf = coinanimlist[0]
+coinsoundlist = [coin1sound, coin2sound, coin3sound]
 playerwalkdownlist = [player_walkdown_surf, player_walkdown1_surf, player_walkdown2_surf, player_walkdown3_surf]
 playerwalkuplist = [player_walkup_surf, player_walkup1_surf, player_walkup2_surf]
 playeridlelist = [player_idle1_surf, player_idle2_surf, player_idle3_surf]
@@ -56,6 +62,7 @@ moving_right = False
 moving_up = False
 moving_down = False
 on_platform = False
+playing_backgroundmusic = False
 # Animation variables
 walk_frame = 0
 walk_animation_speed = 7
@@ -66,6 +73,7 @@ right_index = 0
 up_index = 0
 down_index = 0
 coin_index = 0
+coinsound_index = 0
 gun = Gun(screen)
 
 frame = screen.get_rect()
@@ -127,7 +135,7 @@ while running:
             if event.key == pygame.K_e:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 bullet_speed_x, bullet_speed_y = gun.shoot(player_render_rect, mouse_x, mouse_y)
-
+                shooting_sound.play()
                 for bullet, speed in gun.bullets:
                     bullet.x += speed[0]
                     bullet.y += speed[1]
@@ -184,6 +192,10 @@ while running:
     if coin_index >= len(coinanimlist):
         coin_index = 0
 
+    if not playing_backgroundmusic:
+        pygame.mixer.music.load("Sounds/backgroundmusic.ogg")
+        pygame.mixer.music.play(loops=-1)
+        playing_backgroundmusic = True
 ###CAMERA####
 
     camera.center = player_rect.center
@@ -242,6 +254,8 @@ while running:
     index = player_render_rect.collidelist(adjusted_coin_rects)
     if index != -1:
         coins.pop(index)
+        coinsoundlist[coinsound_index].play()
+        coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
 
 
 
