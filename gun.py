@@ -8,16 +8,16 @@ class Gun:
         self.screen = screen
         self.bullet_width = 10
         self.bullet_height = 10
-        self.bullet_color = (0, 0, 0)
+        self.bullet_color = (255, 0, 0)
         self.bullet_speed = 10
         self.bullets = []  # Each bullet will be a tuple (rect, speed)
 
-    def shoot(self, player_render_rect, mouse_x, mouse_y):
-        new_bullet = pygame.Rect(player_render_rect.right, player_render_rect.centery - self.bullet_height // 2, self.bullet_width,
+    def shoot(self, gunny_rect, mouse_x, mouse_y):
+        new_bullet = pygame.Rect(gunny_rect.left, gunny_rect.centery - 30 - self.bullet_height // 2, self.bullet_width,
                                  self.bullet_height)
 
         # Calculate angle between player and mouse
-        angle = math.atan2(mouse_y - player_render_rect.centery, mouse_x - player_render_rect.right)
+        angle = math.atan2(mouse_y - gunny_rect.centery +30, mouse_x - gunny_rect.left)
 
         # Set bullet speed based on angle
         bullet_speed_x = self.bullet_speed * math.cos(angle)
@@ -34,7 +34,7 @@ class Gun:
 
     def remove_bullets_off_screen(self):
         self.bullets = [(bullet, speed) for bullet, speed in self.bullets if
-                        bullet.x < 800]  # Adjust 800 according to your screen width
+                        bullet.x < 800]
 
     def check_collisions(self, snails, camera, coins, coin_rect):
         for bullet, _ in self.bullets[:]:

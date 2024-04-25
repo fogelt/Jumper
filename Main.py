@@ -11,6 +11,7 @@ pygame.font.init()
 pygame.mixer.init()
 font = pygame.font.Font(None, 36)
 
+
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Edvins Spel")
@@ -40,11 +41,16 @@ player_walkleft3_surf = pygame.image.load("Graphics/player/playerwalkleft3.png")
 player_walkright1_surf = pygame.image.load("Graphics/player/playerwalkright1.png").convert_alpha()
 player_walkright2_surf = pygame.image.load("Graphics/player/playerwalkright2.png").convert_alpha()
 player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png").convert_alpha()
+heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
+pierce_surf = pygame.image.load("Graphics/items/pierce.png").convert_alpha()
+pierce_rect = pierce_surf.get_rect()
 
-
-# Set player_rect and initial player_surf to idle surface
+gunny_surf = pygame.image.load("Graphics/items/gunny.png").convert_alpha()
+gunny_rect = gunny_surf.get_rect()
 coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alpha() for i in range(18)]
 coin_surf = coinanimlist[0]
+snailanimlist = [pygame.image.load(f"Graphics/foes/snail{i:02d}.png").convert_alpha() for i in range(2)]
+snail_surf = snailanimlist[0]
 coinsoundlist = [coin1sound, coin2sound, coin3sound]
 playerwalkdownlist = [player_walkdown_surf, player_walkdown1_surf, player_walkdown2_surf, player_walkdown3_surf]
 playerwalkuplist = [player_walkup_surf, player_walkup1_surf, player_walkup2_surf]
@@ -55,7 +61,6 @@ player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(WIDTH//2, HEIGHT//2))
 player_speed = 10  # Adjust the player's movement speed
 
-
 # Initialize flags to track key presses
 moving_left = False
 moving_right = False
@@ -63,6 +68,8 @@ moving_up = False
 moving_down = False
 on_platform = False
 playing_backgroundmusic = False
+coin_inv = 0
+gunny_offset = (20, 50)
 # Animation variables
 walk_frame = 0
 walk_animation_speed = 7
@@ -74,23 +81,14 @@ up_index = 0
 down_index = 0
 coin_index = 0
 coinsound_index = 0
+snail_index = 0
 gun = Gun(screen)
 
 frame = screen.get_rect()
 camera = frame.copy()
 
-snail_surf = pygame.image.load("Graphics/foes/snail1.png")
-
-
-
 snails = []
 coins = []
-
-
-
-
-
-
 
 def display_menu():
     menu_running = True
@@ -132,9 +130,10 @@ while running:
             if event.key == pygame.K_s:
                 moving_down = True
 
+
             if event.key == pygame.K_e:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                bullet_speed_x, bullet_speed_y = gun.shoot(player_render_rect, mouse_x, mouse_y)
+                bullet_speed_x, bullet_speed_y = gun.shoot(gunny_rect, mouse_x, mouse_y)
                 shooting_sound.play()
                 for bullet, speed in gun.bullets:
                     bullet.x += speed[0]
@@ -151,6 +150,10 @@ while running:
             if event.key == pygame.K_s:
                 moving_down = False
 
+    current_time = pygame.time.get_ticks()
+    minutes = current_time // 60000
+    seconds = (current_time // 1000) % 60
+
     if moving_left:
         player_rect.x -= player_speed
     if moving_right:
@@ -159,8 +162,6 @@ while running:
         player_rect.y -= player_speed
     if moving_down:
         player_rect.y += player_speed
-
-    mouse_x, mouse_y = pygame.mouse.get_pos()
 
     if moving_left:
         player_surf = playerwalkleftlist[int(left_index)]
@@ -191,6 +192,11 @@ while running:
     coin_index += animation_speed
     if coin_index >= len(coinanimlist):
         coin_index = 0
+    snail_surf = snailanimlist[int(snail_index)]
+    snail_index += animation_speed
+    if snail_index >= len(snailanimlist):
+        snail_index = 0
+
 
     if not playing_backgroundmusic:
         pygame.mixer.music.load("Sounds/backgroundmusic.ogg")
@@ -219,14 +225,6 @@ while running:
                     player_rect.y -= 50
 
     player_render_rect = player_rect.move(-camera.x, -camera.y)
-
-
-
-    
-    #player_render_rect = player_rect.move(-camera.x, -camera.y)
-
-
-
         
     screen.fill((70, 192, 236))
     for tile in tiles:
@@ -236,7 +234,6 @@ while running:
         snail.move_towards_target()
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
         screen.blit(snail_surf, snail_render_rect)
-        #screen.blit(snail_surf, snail)
 
     if len(snails) <= 2:
         for _ in range(10):
@@ -247,7 +244,6 @@ while running:
             snail.rect = snail_rect
             snails.append(snail)
 
-
     coin_rect = coin_surf.get_rect()
 
     adjusted_coin_rects = [coin.move(-camera.x, -camera.y) for coin in coins]
@@ -256,17 +252,36 @@ while running:
         coins.pop(index)
         coinsoundlist[coinsound_index].play()
         coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
+        coin_inv += 1
+    coin_inv_text_surf = font.render(": " + str(coin_inv), False, (255, 255, 255))
+    current_time_surf = font.render(str(minutes)+(":")+str(seconds), False, (255, 255, 255))
 
-
+    mouse_pos = pygame.mouse.get_pos()
+    dx = mouse_pos[0] - (player_render_rect.x + player_rect.width + gunny_offset[0])
+    dy = mouse_pos[1] - (player_render_rect.y + gunny_offset[1])
+    angle = math.degrees(math.atan2(-dy, dx))
+    if mouse_pos[0] < player_render_rect.centerx:
+        rotated_gunny_image = pygame.transform.flip(gunny_surf, False, True)
+        gunny_offset = (-20,35)
+    else:
+        rotated_gunny_image = gunny_surf
+        gunny_offset = (20,35)
+    rotated_gunny_image = pygame.transform.rotate(rotated_gunny_image, angle)
+    gunny_rect = rotated_gunny_image.get_rect()
+    gunny_rect.midright = (player_render_rect.x + gunny_offset[0], player_render_rect.y + gunny_offset[1])
 
     gun.check_collisions(snails, camera, coins, coin_rect)
     for coin in coins:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
     screen.blit(player_surf, player_render_rect)
+    screen.blit(coinanimlist[0], (15,570))
+    screen.blit(coin_inv_text_surf, (40, 570))
+    screen.blit(heart_surf, (15, 540))
+    screen.blit(current_time_surf, (400, 50))
+    gunny_rect = player_render_rect.move(gunny_offset)
+    screen.blit(rotated_gunny_image, gunny_rect)
     gun.update()
-    # Remove bullets that have gone off the screen
     gun.remove_bullets_off_screen()
-
 
     pygame.display.update()
 
