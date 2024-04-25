@@ -22,6 +22,7 @@ shooting_sound = pygame.mixer.Sound("Sounds/flaunch.wav")
 coin1sound = pygame.mixer.Sound("Sounds/coin.wav")
 coin2sound = pygame.mixer.Sound("Sounds/coin2.wav")
 coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
+ouch_sound = pygame.mixer.Sound("Sounds/ouch.mp3")
 
 # Load player images for different states (idle and jump)
 player_idle1_surf = Graphics.load("playeridle1")
@@ -42,6 +43,16 @@ heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
 pierce_surf = pygame.image.load("Graphics/items/pierce.png").convert_alpha()
 pierce_rect = pierce_surf.get_rect()
 
+hpbar_surface = pygame.Surface((70, 8))
+hpbar_rect = hpbar_surface.get_rect
+hpbar_surface.fill((255,0,0))
+hpbarborder_surface = pygame.Surface((70, 9))
+hpbarborder_rect = hpbarborder_surface.get_rect()
+hpbarborder_surface.fill((0,0,0))
+hp = 70
+max_hp = 70
+last_health_decrease_time = 0
+grace_period = 1500
 gunny_surf = pygame.image.load("Graphics/items/gunny.png").convert_alpha()
 gunny_rect = gunny_surf.get_rect()
 coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alpha() for i in range(18)]
@@ -267,6 +278,23 @@ while running:
     gunny_rect = rotated_gunny_image.get_rect()
     gunny_rect.midright = (player_render_rect.x + gunny_offset[0], player_render_rect.y + gunny_offset[1])
 
+    hpbar_rect = (50, 545)
+    hpbarborder_rect = (50, 545)
+    hp_percentage = hp / max_hp
+    filled_width = int(hp_percentage * 70)
+    hpbar_surface = pygame.transform.scale(hpbar_surface, (filled_width, 7))
+    adjusted_snail_rects = [snail.rect.move(-camera.x, -camera.y) for snail in snails]
+    index1 = player_render_rect.collidelist(adjusted_snail_rects)
+    if index1 != -1 and current_time - last_health_decrease_time >= grace_period:
+        hp -= 10
+        last_health_decrease_time = current_time
+        ouch_sound.play()
+        if hp < 0:
+            hp = 0
+    if hp == 0:
+        display_menu()
+        hp = 70
+
     gun.check_collisions(snails, camera, coins, coin_rect)
     for coin in coins:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
@@ -277,6 +305,8 @@ while running:
     screen.blit(current_time_surf, (400, 50))
     gunny_rect = player_render_rect.move(gunny_offset)
     screen.blit(rotated_gunny_image, gunny_rect)
+    screen.blit(hpbarborder_surface, hpbarborder_rect)
+    screen.blit(hpbar_surface, hpbar_rect)
     gun.update()
     gun.remove_bullets_off_screen()
 
