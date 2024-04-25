@@ -1,6 +1,6 @@
 import pygame
 import csv
-
+import Graphics
 
 class Tile(pygame.sprite.Sprite):
     spawn_x = 0
@@ -21,7 +21,7 @@ class Tile(pygame.sprite.Sprite):
 
 
 tiles = pygame.sprite.Group()
-grass_image = pygame.image.load("Graphics/grass.png")
+grass_image = Graphics.load("grass")
 water_image = pygame.image.load("Graphics/water.png")
 grass_bot = pygame.image.load("Graphics/grass_bot.png")
 grass_top = pygame.image.load("Graphics/grass_top.png")

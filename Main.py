@@ -3,19 +3,20 @@ from pygame.locals import *
 import sys
 import math
 from gun import *
-from Tiles import *
 from Enemies import *
+import Graphics
 
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()
 font = pygame.font.Font(None, 36)
 
-
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Edvins Spel")
 Clock = pygame.time.Clock()
+
+from Tiles import *
 
 shooting_sound = pygame.mixer.Sound("Sounds/flaunch.wav")
 coin1sound = pygame.mixer.Sound("Sounds/coin.wav")
@@ -23,7 +24,7 @@ coin2sound = pygame.mixer.Sound("Sounds/coin2.wav")
 coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
 
 # Load player images for different states (idle and jump)
-player_idle1_surf = pygame.image.load("Graphics/player/playeridle1.png").convert_alpha()
+player_idle1_surf = Graphics.load("playeridle1")
 player_idle2_surf = pygame.image.load("Graphics/player/playeridle2.png").convert_alpha()
 player_idle3_surf = pygame.image.load("Graphics/player/playeridle3.png").convert_alpha()
 player_walkup_surf = pygame.image.load("Graphics/player/playerwalkup.png").convert_alpha()
@@ -34,10 +35,6 @@ player_walkdown1_surf = pygame.image.load("Graphics/player/playerwalkdown1.png")
 player_walkdown2_surf = pygame.image.load("Graphics/player/playerwalkdown2.png").convert_alpha()
 player_walkdown3_surf = pygame.image.load("Graphics/player/playerwalkdow3.png").convert_alpha()
 
-
-player_walkleft1_surf = pygame.image.load("Graphics/player/playerwalkleft1.png").convert_alpha()
-player_walkleft2_surf = pygame.image.load("Graphics/player/playerwalkleft2.png").convert_alpha()
-player_walkleft3_surf = pygame.image.load("Graphics/player/playerwalkleft3.png").convert_alpha()
 player_walkright1_surf = pygame.image.load("Graphics/player/playerwalkright1.png").convert_alpha()
 player_walkright2_surf = pygame.image.load("Graphics/player/playerwalkright2.png").convert_alpha()
 player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png").convert_alpha()
@@ -55,7 +52,7 @@ coinsoundlist = [coin1sound, coin2sound, coin3sound]
 playerwalkdownlist = [player_walkdown_surf, player_walkdown1_surf, player_walkdown2_surf, player_walkdown3_surf]
 playerwalkuplist = [player_walkup_surf, player_walkup1_surf, player_walkup2_surf]
 playeridlelist = [player_idle1_surf, player_idle2_surf, player_idle3_surf]
-playerwalkleftlist = [player_walkleft1_surf, player_walkleft2_surf, player_walkleft3_surf]
+playerwalkleftlist = Graphics.loadList(["playerwalkleft1", "playerwalkleft2", "playerwalkleft3"])
 playerwalkrightlist = [player_walkright1_surf, player_walkright2_surf, player_walkright3_surf]
 player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(WIDTH//2, HEIGHT//2))
