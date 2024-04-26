@@ -105,6 +105,15 @@ camera = frame.copy()
 snails = []
 coins = []
 
+def check_col(rect, speed_x, speed_y):
+    next_rect = rect.move(speed_x, speed_y)
+    for tile in tiles:
+        tile_rect = tile.rect.move(camera.topleft)
+        if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
+            return True
+    return False
+
+
 def display_menu():
     menu_running = True
     while menu_running:
@@ -183,13 +192,21 @@ while running:
 
 
     if moving_left:
-        player_rect.x -= player_speed
+        next_player_rect = player_render_rect.move(-player_speed, 0)
+        if not check_col(next_player_rect, -player_speed, 0):
+            player_rect.x -= player_speed
     if moving_right:
-        player_rect.x += player_speed
+        next_player_rect = player_render_rect.move(+player_speed, 0)
+        if not check_col(next_player_rect, +player_speed, 0):
+            player_rect.x += player_speed
     if moving_up:
-        player_rect.y -= player_speed
+        next_player_rect = player_render_rect.move(0, -player_speed)
+        if not check_col(next_player_rect, -player_speed, 0):
+            player_rect.y -= player_speed
     if moving_down:
-        player_rect.y += player_speed
+        next_player_rect = player_render_rect.move(0, +player_speed)
+        if not check_col(next_player_rect, +player_speed, 0):
+            player_rect.y += player_speed
 
     if moving_left:
         player_surf = playerwalkleftlist[int(left_index)]
@@ -235,22 +252,6 @@ while running:
     camera.center = player_rect.center
 
 
-    for tile in tiles:
-        if tile.image == water_image:
-            tile_rect = tile.rect.move(camera.topleft)
-            if player_rect.colliderect(tile_rect):
-                if moving_left and player_rect.left < tile_rect.right:
-                    moving_left = False
-                    player_rect.x += 50
-                if moving_right and player_rect.right > tile_rect.left:
-                    moving_right = False
-                    player_rect.x -= 50
-                if moving_up and player_rect.top < tile_rect.bottom:
-                    moving_up = False
-                    player_rect.y += 50
-                if moving_down and player_rect.bottom > tile_rect.top:
-                    moving_down = False
-                    player_rect.y -= 50
 
     player_render_rect = player_rect.move(-camera.x, -camera.y)
         
@@ -282,6 +283,7 @@ while running:
         coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
         coin_inv += 1
     coin_inv_text_surf = font.render(": " + str(coin_inv), False, (255, 255, 255))
+
 
 
     mouse_pos = pygame.mouse.get_pos()
