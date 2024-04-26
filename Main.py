@@ -40,17 +40,21 @@ player_walkright1_surf = pygame.image.load("Graphics/player/playerwalkright1.png
 player_walkright2_surf = pygame.image.load("Graphics/player/playerwalkright2.png").convert_alpha()
 player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png").convert_alpha()
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
-pierce_surf = pygame.image.load("Graphics/items/pierce.png").convert_alpha()
-pierce_rect = pierce_surf.get_rect()
-
-hpbar_surface = pygame.Surface((70, 8))
+bullet_upgrade_surf = Graphics.load("bullet_upgrade1")
+bullet_upgrade_surf2 = Graphics.load("bullet_upgrade2")
+bullet_upgrade_rect2 = bullet_upgrade_surf2.get_rect(center = (150, 1250))
+maxhpup_surf = Graphics.load("maxhpup")
+maxhpup_rect = maxhpup_surf.get_rect(center = (1525, 1250))
+bullet_upgrade_rect = bullet_upgrade_surf.get_rect(center = (150, 250))
+poweruplist = [bullet_upgrade_rect, maxhpup_rect]
+hp = 100
+max_hp = 100
+hpbar_surface = pygame.Surface((max_hp, 8))
 hpbar_rect = hpbar_surface.get_rect
 hpbar_surface.fill((255,0,0))
-hpbarborder_surface = pygame.Surface((70, 9))
+hpbarborder_surface = pygame.Surface((max_hp, 9))
 hpbarborder_rect = hpbarborder_surface.get_rect()
 hpbarborder_surface.fill((0,0,0))
-hp = 70
-max_hp = 70
 last_health_decrease_time = 0
 grace_period = 500
 gunny_surf = pygame.image.load("Graphics/items/gunny.png").convert_alpha()
@@ -66,7 +70,7 @@ playeridlelist = [player_idle1_surf, player_idle2_surf, player_idle3_surf]
 playerwalkleftlist = Graphics.loadList(["playerwalkleft1", "playerwalkleft2", "playerwalkleft3"])
 playerwalkrightlist = [player_walkright1_surf, player_walkright2_surf, player_walkright3_surf]
 player_surf = playeridlelist[0]
-player_rect = player_surf.get_rect(center=(WIDTH//2, HEIGHT//2))
+player_rect = player_surf.get_rect(center=(800, 800))
 player_speed = 10  # Adjust the player's movement speed
 
 # Initialize flags to track key presses
@@ -76,6 +80,8 @@ moving_up = False
 moving_down = False
 on_platform = False
 playing_backgroundmusic = False
+bullet_upgrade = False
+bullet_upgrade2 = False
 coin_inv = 0
 gunny_offset = (20, 50)
 # Animation variables
@@ -91,7 +97,7 @@ coin_index = 0
 coinsound_index = 0
 snail_index = 0
 gun = Gun(screen)
-current_time = 0
+start_time = pygame.time.get_ticks()
 
 frame = screen.get_rect()
 camera = frame.copy()
@@ -140,15 +146,24 @@ while running:
             if event.key == pygame.K_s:
                 moving_down = True
 
-
             if event.key == pygame.K_e:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                bullet_speed_x, bullet_speed_y = gun.shoot(gunny_rect, mouse_x, mouse_y)
-                shooting_sound.play()
-                for bullet, speed in gun.bullets:
-                    bullet.x += speed[0]
-                    bullet.y += speed[1]
-                    pygame.draw.rect(screen, gun.bullet_color, bullet)
+                if bullet_upgrade == True:
+                    bullet_speeds = gun.shoot(gunny_rect, mouse_x, mouse_y, bullet_upgrade2)
+                    shooting_sound.play()
+                    for bullet_speed_x, bullet_speed_y in bullet_speeds:
+                        new_bullet = pygame.Rect(gunny_rect.left, gunny_rect.centery - 30 - gun.bullet_height // 2,
+                                                 gun.bullet_width, gun.bullet_height)
+                        gun.bullets.append((new_bullet, (bullet_speed_x, bullet_speed_y)))
+                else:
+                    bullet_speed_x, bullet_speed_y = gun.shoot1(gunny_rect, mouse_x, mouse_y)
+                    shooting_sound.play()
+
+
+            for bullet, speed in gun.bullets:
+                bullet.x += speed[0]
+                bullet.y += speed[1]
+                pygame.draw.rect(screen, gun.bullet_color, bullet)
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
@@ -161,8 +176,10 @@ while running:
                 moving_down = False
 
     current_time = pygame.time.get_ticks()
-    minutes = current_time // 60000
-    seconds = (current_time // 1000) % 60
+    elapsed_time = pygame.time.get_ticks() - start_time
+    minutes = elapsed_time // 60000
+    seconds = (elapsed_time // 1000) % 60
+
 
 
     if moving_left:
@@ -284,7 +301,7 @@ while running:
     hpbar_rect = (50, 545)
     hpbarborder_rect = (50, 545)
     hp_percentage = hp / max_hp
-    filled_width = int(hp_percentage * 70)
+    filled_width = int(hp_percentage * 100)
     hpbar_surface = pygame.transform.scale(hpbar_surface, (filled_width, 7))
     adjusted_snail_rects = [snail.rect.move(-camera.x, -camera.y) for snail in snails]
     index1 = player_render_rect.collidelist(adjusted_snail_rects)
@@ -298,11 +315,27 @@ while running:
         display_menu()
         coin_inv = 0
         hp = 70
+        start_time = pygame.time.get_ticks()
         for snail in snails[:]:
             snails.remove(snail)
         for coin in coins[:]:
             coins.remove(coin)
 
+    bullet_upgrade_render_rect = bullet_upgrade_rect.move(- camera.x, - camera.y)
+    if player_render_rect.colliderect(bullet_upgrade_render_rect) and coin_inv >= 25 and bullet_upgrade == False:
+        bullet_upgrade = True
+        coin_inv -= 25
+    bullet_upgrade_render_rect2 = bullet_upgrade_rect2.move(- camera.x, - camera.y)
+    if player_render_rect.colliderect(bullet_upgrade_render_rect2) and coin_inv >= 25 and bullet_upgrade == True:
+        bullet_upgrade2 = True
+        coin_inv -= 25
+    maxhpup_render_rect = maxhpup_rect.move(- camera.x, - camera.y)
+    if player_render_rect.colliderect(maxhpup_render_rect) and coin_inv >= 10:
+        max_hp += 10
+        hp += 10
+        coin_inv -= 10
+
+    current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
     gun.check_collisions(snails, camera, coins, coin_rect)
     for coin in coins:
@@ -316,6 +349,10 @@ while running:
     screen.blit(rotated_gunny_image, gunny_rect)
     screen.blit(hpbarborder_surface, hpbarborder_rect)
     screen.blit(hpbar_surface, hpbar_rect)
+    screen.blit(current_hp_surf, (55, 540))
+    screen.blit(bullet_upgrade_surf, bullet_upgrade_render_rect)
+    screen.blit(bullet_upgrade_surf2, bullet_upgrade_render_rect2)
+    screen.blit(maxhpup_surf, maxhpup_render_rect)
     gun.update()
     gun.remove_bullets_off_screen()
 
