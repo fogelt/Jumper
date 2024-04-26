@@ -5,6 +5,7 @@ import math
 from gun import *
 from Enemies import *
 import Graphics
+import Serializer
 
 pygame.init()
 pygame.font.init()
@@ -105,6 +106,11 @@ camera = frame.copy()
 snails = []
 coins = []
 
+data = Serializer.load('data.pickle')
+# Load saved data
+if 'coins' in data:
+    coin_inv = data['coins']
+    
 def display_menu():
     menu_running = True
     while menu_running:
@@ -134,7 +140,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+            
+            # Data you want to save
+            data = {'coins': coin_inv, 'otherData': 1, 'etc': 2}
+            Serializer.save(data, 'data.pickle')
+                
         # Set flags when keys are pressed or released
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
