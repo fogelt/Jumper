@@ -52,7 +52,7 @@ hpbarborder_surface.fill((0,0,0))
 hp = 70
 max_hp = 70
 last_health_decrease_time = 0
-grace_period = 1500
+grace_period = 500
 gunny_surf = pygame.image.load("Graphics/items/gunny.png").convert_alpha()
 gunny_rect = gunny_surf.get_rect()
 coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alpha() for i in range(18)]
@@ -91,6 +91,7 @@ coin_index = 0
 coinsound_index = 0
 snail_index = 0
 gun = Gun(screen)
+current_time = 0
 
 frame = screen.get_rect()
 camera = frame.copy()
@@ -116,6 +117,7 @@ def display_menu():
         start_rect = start_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
         screen.blit(title_surface, title_rect)
         screen.blit(start_surface, start_rect)
+
         pygame.display.flip()
 
 display_menu()
@@ -161,6 +163,7 @@ while running:
     current_time = pygame.time.get_ticks()
     minutes = current_time // 60000
     seconds = (current_time // 1000) % 60
+
 
     if moving_left:
         player_rect.x -= player_speed
@@ -262,7 +265,7 @@ while running:
         coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
         coin_inv += 1
     coin_inv_text_surf = font.render(": " + str(coin_inv), False, (255, 255, 255))
-    current_time_surf = font.render(str(minutes)+(":")+str(seconds), False, (255, 255, 255))
+
 
     mouse_pos = pygame.mouse.get_pos()
     dx = mouse_pos[0] - (player_render_rect.x + player_rect.width + gunny_offset[0])
@@ -293,8 +296,14 @@ while running:
             hp = 0
     if hp == 0:
         display_menu()
+        coin_inv = 0
         hp = 70
+        for snail in snails[:]:
+            snails.remove(snail)
+        for coin in coins[:]:
+            coins.remove(coin)
 
+    current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
     gun.check_collisions(snails, camera, coins, coin_rect)
     for coin in coins:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
