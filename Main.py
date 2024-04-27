@@ -25,20 +25,6 @@ coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
 ouch_sound = pygame.mixer.Sound("Sounds/ouch.mp3")
 
 # Load player images for different states (idle and jump)
-player_idle1_surf = Graphics.load("playeridle1")
-player_idle2_surf = pygame.image.load("Graphics/player/playeridle2.png").convert_alpha()
-player_idle3_surf = pygame.image.load("Graphics/player/playeridle3.png").convert_alpha()
-player_walkup_surf = pygame.image.load("Graphics/player/playerwalkup.png").convert_alpha()
-player_walkup1_surf = pygame.image.load("Graphics/player/playerwalkup1.png").convert_alpha()
-player_walkup2_surf = pygame.image.load("Graphics/player/playerwalkup2.png").convert_alpha()
-player_walkdown_surf = pygame.image.load("Graphics/player/playerwalkdown.png").convert_alpha()
-player_walkdown1_surf = pygame.image.load("Graphics/player/playerwalkdown1.png").convert_alpha()
-player_walkdown2_surf = pygame.image.load("Graphics/player/playerwalkdown2.png").convert_alpha()
-player_walkdown3_surf = pygame.image.load("Graphics/player/playerwalkdow3.png").convert_alpha()
-
-player_walkright1_surf = pygame.image.load("Graphics/player/playerwalkright1.png").convert_alpha()
-player_walkright2_surf = pygame.image.load("Graphics/player/playerwalkright2.png").convert_alpha()
-player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png").convert_alpha()
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
 bullet_upgrade_surf = Graphics.load("bullet_upgrade1")
 bullet_upgrade_surf2 = Graphics.load("bullet_upgrade2")
@@ -64,11 +50,10 @@ coin_surf = coinanimlist[0]
 snailanimlist = [pygame.image.load(f"Graphics/foes/snail{i:02d}.png").convert_alpha() for i in range(2)]
 snail_surf = snailanimlist[0]
 coinsoundlist = [coin1sound, coin2sound, coin3sound]
-playerwalkdownlist = [player_walkdown_surf, player_walkdown1_surf, player_walkdown2_surf, player_walkdown3_surf]
-playerwalkuplist = [player_walkup_surf, player_walkup1_surf, player_walkup2_surf]
-playeridlelist = [player_idle1_surf, player_idle2_surf, player_idle3_surf]
-playerwalkleftlist = Graphics.loadList(["playerwalkleft1", "playerwalkleft2", "playerwalkleft3"])
-playerwalkrightlist = [player_walkright1_surf, player_walkright2_surf, player_walkright3_surf]
+playeridlelist = Graphics.loadList(["playeridle00", "playeridle01", "playeridle02"])
+playerwalkleftlist = Graphics.loadList(["playerwalkleft0", "playerwalkleft1", "playerwalkleft2"])
+playerwalkrightlist = Graphics.loadList(["playerwalkright00", "playerwalkright01", "playerwalkright02"])
+player_idle_surf = playeridlelist[0]
 player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(800, 800))
 player_speed = 10  # Adjust the player's movement speed
@@ -86,7 +71,7 @@ coin_inv = 0
 gunny_offset = (20, 50)
 # Animation variables
 walk_frame = 0
-walk_animation_speed = 7
+walk_animation_speed = 5
 idle_index = 0
 animation_speed = 0.15
 left_index = 0
@@ -214,20 +199,20 @@ while running:
         if left_index >= len(playerwalkleftlist):
             left_index = 0
     elif moving_right:
-        player_surf = playerwalkrightlist[int(right_index)]
-        right_index += animation_speed
-        if right_index >= len(playerwalkrightlist):
-             right_index = 0
+        player_surf = playerwalkleftlist[int(left_index)]
+        left_index += animation_speed
+        if left_index >= len(playerwalkleftlist):
+            left_index = 0
     elif moving_up:
-        player_surf = playerwalkuplist[int(up_index)]
-        up_index += animation_speed
-        if up_index >= len(playerwalkuplist):
-            up_index = 0
+        player_surf = playerwalkleftlist[int(left_index)]
+        left_index += animation_speed
+        if left_index >= len(playerwalkleftlist):
+            left_index = 0
     elif moving_down:
-        player_surf = playerwalkdownlist[int(down_index)]
-        down_index += animation_speed
-        if down_index >= len(playerwalkdownlist):
-            down_index = 0
+        player_surf = playerwalkleftlist[int(left_index)]
+        left_index += animation_speed
+        if left_index >= len(playerwalkleftlist):
+            left_index = 0
     else:
         player_surf = playeridlelist[int(idle_index)]
         idle_index += animation_speed
@@ -290,6 +275,8 @@ while running:
     dx = mouse_pos[0] - (player_render_rect.x + player_rect.width + gunny_offset[0])
     dy = mouse_pos[1] - (player_render_rect.y + gunny_offset[1])
     angle = math.degrees(math.atan2(-dy, dx))
+    if mouse_pos[0] > player_render_rect.centerx:
+        player_surf = pygame.transform.flip(player_surf, True, False)
     if mouse_pos[0] < player_render_rect.centerx:
         rotated_gunny_image = pygame.transform.flip(gunny_surf, False, True)
         gunny_offset = (-20,35)

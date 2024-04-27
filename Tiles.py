@@ -32,6 +32,7 @@ grass_botl = pygame.image.load("Graphics/grass_botl.png")
 grass_botr = pygame.image.load("Graphics/grass_botr.png")
 grass_topl = pygame.image.load("Graphics/grass_topl.png")
 grass_topr = pygame.image.load("Graphics/grass_topr.png")
+tree = pygame.image.load("Graphics/tree.png")
 
 
 
@@ -77,6 +78,9 @@ for row_index, row in enumerate(map):
         elif value == 1009:
             image = grass_topr
             collision = False
+        elif value == 1010:
+            image = tree
+            collision = True
 
         tile = Tile(image, col_index * SQUARE_SIZE, row_index * SQUARE_SIZE, collision)
         tiles.add(tile)
