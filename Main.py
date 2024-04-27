@@ -25,20 +25,6 @@ coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
 ouch_sound = pygame.mixer.Sound("Sounds/ouch.mp3")
 
 # Load player images for different states (idle and jump)
-player_idle1_surf = Graphics.load("playeridle1")
-player_idle2_surf = pygame.image.load("Graphics/player/playeridle2.png").convert_alpha()
-player_idle3_surf = pygame.image.load("Graphics/player/playeridle3.png").convert_alpha()
-player_walkup_surf = pygame.image.load("Graphics/player/playerwalkup.png").convert_alpha()
-player_walkup1_surf = pygame.image.load("Graphics/player/playerwalkup1.png").convert_alpha()
-player_walkup2_surf = pygame.image.load("Graphics/player/playerwalkup2.png").convert_alpha()
-player_walkdown_surf = pygame.image.load("Graphics/player/playerwalkdown.png").convert_alpha()
-player_walkdown1_surf = pygame.image.load("Graphics/player/playerwalkdown1.png").convert_alpha()
-player_walkdown2_surf = pygame.image.load("Graphics/player/playerwalkdown2.png").convert_alpha()
-player_walkdown3_surf = pygame.image.load("Graphics/player/playerwalkdow3.png").convert_alpha()
-
-player_walkright1_surf = pygame.image.load("Graphics/player/playerwalkright1.png").convert_alpha()
-player_walkright2_surf = pygame.image.load("Graphics/player/playerwalkright2.png").convert_alpha()
-player_walkright3_surf = pygame.image.load("Graphics/player/playerwalkright3.png").convert_alpha()
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
 bullet_upgrade_surf = Graphics.load("bullet_upgrade1")
 bullet_upgrade_surf2 = Graphics.load("bullet_upgrade2")
@@ -64,11 +50,10 @@ coin_surf = coinanimlist[0]
 snailanimlist = [pygame.image.load(f"Graphics/foes/snail{i:02d}.png").convert_alpha() for i in range(2)]
 snail_surf = snailanimlist[0]
 coinsoundlist = [coin1sound, coin2sound, coin3sound]
-playerwalkdownlist = [player_walkdown_surf, player_walkdown1_surf, player_walkdown2_surf, player_walkdown3_surf]
-playerwalkuplist = [player_walkup_surf, player_walkup1_surf, player_walkup2_surf]
-playeridlelist = [player_idle1_surf, player_idle2_surf, player_idle3_surf]
-playerwalkleftlist = Graphics.loadList(["playerwalkleft1", "playerwalkleft2", "playerwalkleft3"])
-playerwalkrightlist = [player_walkright1_surf, player_walkright2_surf, player_walkright3_surf]
+playeridlelist = Graphics.loadList(["playeridle00", "playeridle01", "playeridle02"])
+playerwalkleftlist = Graphics.loadList(["playerwalkleft0", "playerwalkleft1", "playerwalkleft2"])
+playerwalkrightlist = Graphics.loadList(["playerwalkright00", "playerwalkright01", "playerwalkright02"])
+player_idle_surf = playeridlelist[0]
 player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(800, 800))
 player_speed = 10  # Adjust the player's movement speed
@@ -86,7 +71,7 @@ coin_inv = 0
 gunny_offset = (20, 50)
 # Animation variables
 walk_frame = 0
-walk_animation_speed = 7
+walk_animation_speed = 5
 idle_index = 0
 animation_speed = 0.15
 left_index = 0
@@ -112,8 +97,69 @@ def check_col(rect, speed_x, speed_y):
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
+def display_shop():
+    shop_running = True
+    global bullet_upgrade
+    global bullet_upgrade2
+    global max_hp
+    global hp
+    while shop_running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if mouse_rect.colliderect(bullet_upgrade_rect) and coin_inv >= 50:
+                    bullet_upgrade = True
+                    shop_running = False
+                if mouse_rect.colliderect(bullet_upgrade_rect2) and coin_inv >=100 and bullet_upgrade == True:
+                    bullet_upgrade2 = True
+                    shop_running = False
+                if mouse_rect.colliderect(maxhpup_rect) and coin_inv >=25:
+                    max_hp += 10
+                    hp += 10
+                    shop_running = False
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        screen.fill((0, 0, 0))
+        title_surface = font.render("Upgrading time!", True, (255, 255, 255))
+        title_rect = title_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
+        up1_surface = font.render("1 more bullet", True, (255, 255, 255))
+        up1_rect = up1_surface.get_rect(center=(300, 280))
+        up2_surface = font.render("1 more bullet", True, (255, 255, 255))
+        up2_rect = up2_surface.get_rect(center=(300,380))
+        up3_surface = font.render("10 more max hp", True, (255, 255, 255))
+        up3_rect = up3_surface.get_rect(center=(300,480))
+        c1_surface = font.render(":50", True, (255, 255, 255))
+        c1_rect = c1_surface.get_rect(center=(65, 290))
+        c2_surface = font.render(":100", True, (255, 255, 255))
+        c2_rect = c2_surface.get_rect(center=(65, 390))
+        c3_surface = font.render(":25", True, (255, 255, 255))
+        c3_rect = c3_surface.get_rect(center=(65, 490))
+        bullet_upgrade_rect = (100, 250, 64, 64)
+        bullet_upgrade_rect2 = (100, 350, 64, 64)
+        maxhpup_rect = (100, 450, 64 ,64)
+        coin_rect = (20,280)
+        coin_rect1 = (20, 380)
+        coin_rect2 = (20, 480)
 
+        mouse_rect = pygame.Rect(mouse_x, mouse_y, 1, 1)
 
+        if bullet_upgrade == False:
+            screen.blit(bullet_upgrade_surf, bullet_upgrade_rect)
+            screen.blit(up1_surface, up1_rect)
+            screen.blit(c1_surface, c1_rect)
+            screen.blit(coinanimlist[0], coin_rect)
+        if bullet_upgrade == True and bullet_upgrade2 == False:
+            screen.blit(bullet_upgrade_surf2, bullet_upgrade_rect2)
+            screen.blit(up2_surface, up2_rect)
+            screen.blit(c2_surface, c2_rect)
+            screen.blit(coinanimlist[0], coin_rect1)
+        screen.blit(maxhpup_surf, maxhpup_rect)
+        screen.blit(up3_surface, up3_rect)
+        screen.blit(coinanimlist[0], coin_rect2)
+        screen.blit(c3_surface, c3_rect)
+        screen.blit(title_surface, title_rect)
+        pygame.display.flip()
 def display_menu():
     menu_running = True
     while menu_running:
@@ -126,8 +172,8 @@ def display_menu():
                     menu_running = False
 
         screen.fill((0, 0, 0))
-        title_surface = font.render("Snails", True, (255, 255, 255))
-        start_surface = font.render("Press SPACE to start", True, (255, 255, 255))
+        title_surface = font.render("Snails", False, (255, 255, 255))
+        start_surface = font.render("Press SPACE to start", False, (255, 255, 255))
         title_rect = title_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
         start_rect = start_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
         screen.blit(title_surface, title_rect)
@@ -214,20 +260,20 @@ while running:
         if left_index >= len(playerwalkleftlist):
             left_index = 0
     elif moving_right:
-        player_surf = playerwalkrightlist[int(right_index)]
-        right_index += animation_speed
-        if right_index >= len(playerwalkrightlist):
-             right_index = 0
+        player_surf = playerwalkleftlist[int(left_index)]
+        left_index += animation_speed
+        if left_index >= len(playerwalkleftlist):
+            left_index = 0
     elif moving_up:
-        player_surf = playerwalkuplist[int(up_index)]
-        up_index += animation_speed
-        if up_index >= len(playerwalkuplist):
-            up_index = 0
+        player_surf = playerwalkleftlist[int(left_index)]
+        left_index += animation_speed
+        if left_index >= len(playerwalkleftlist):
+            left_index = 0
     elif moving_down:
-        player_surf = playerwalkdownlist[int(down_index)]
-        down_index += animation_speed
-        if down_index >= len(playerwalkdownlist):
-            down_index = 0
+        player_surf = playerwalkleftlist[int(left_index)]
+        left_index += animation_speed
+        if left_index >= len(playerwalkleftlist):
+            left_index = 0
     else:
         player_surf = playeridlelist[int(idle_index)]
         idle_index += animation_speed
@@ -290,6 +336,8 @@ while running:
     dx = mouse_pos[0] - (player_render_rect.x + player_rect.width + gunny_offset[0])
     dy = mouse_pos[1] - (player_render_rect.y + gunny_offset[1])
     angle = math.degrees(math.atan2(-dy, dx))
+    if mouse_pos[0] > player_render_rect.centerx:
+        player_surf = pygame.transform.flip(player_surf, True, False)
     if mouse_pos[0] < player_render_rect.centerx:
         rotated_gunny_image = pygame.transform.flip(gunny_surf, False, True)
         gunny_offset = (-20,35)
@@ -323,19 +371,9 @@ while running:
         for coin in coins[:]:
             coins.remove(coin)
 
-    bullet_upgrade_render_rect = bullet_upgrade_rect.move(- camera.x, - camera.y)
-    if player_render_rect.colliderect(bullet_upgrade_render_rect) and coin_inv >= 25 and bullet_upgrade == False:
-        bullet_upgrade = True
-        coin_inv -= 25
-    bullet_upgrade_render_rect2 = bullet_upgrade_rect2.move(- camera.x, - camera.y)
-    if player_render_rect.colliderect(bullet_upgrade_render_rect2) and coin_inv >= 25 and bullet_upgrade == True:
-        bullet_upgrade2 = True
-        coin_inv -= 25
-    maxhpup_render_rect = maxhpup_rect.move(- camera.x, - camera.y)
-    if player_render_rect.colliderect(maxhpup_render_rect) and coin_inv >= 10:
-        max_hp += 10
-        hp += 10
-        coin_inv -= 10
+    if seconds == 30 and coin_inv >= 25:
+        display_shop()
+
 
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
@@ -352,9 +390,6 @@ while running:
     screen.blit(hpbarborder_surface, hpbarborder_rect)
     screen.blit(hpbar_surface, hpbar_rect)
     screen.blit(current_hp_surf, (55, 540))
-    screen.blit(bullet_upgrade_surf, bullet_upgrade_render_rect)
-    screen.blit(bullet_upgrade_surf2, bullet_upgrade_render_rect2)
-    screen.blit(maxhpup_surf, maxhpup_render_rect)
     gun.update()
     gun.remove_bullets_off_screen()
 

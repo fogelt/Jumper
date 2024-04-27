@@ -25,6 +25,7 @@ class Tile(pygame.sprite.Sprite):
 
 
 tiles = pygame.sprite.Group()
+
 tile_dict = Graphics.loadDict([type_.name.lower() for type_ in TileEnum.Type])
 
 SQUARE_SIZE = 64
