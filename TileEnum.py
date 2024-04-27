@@ -12,3 +12,4 @@ class Type(Enum):
     GRASS_BOTR = 1007, False
     GRASS_TOPL = 1008, False
     GRASS_TOPR = 1009, False
+    TREE = 1010, True
