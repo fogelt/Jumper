@@ -108,7 +108,7 @@ coins = []
 
 data = Serializer.load('data.pickle')
 # Load saved data
-if 'coins' in data:
+if '.' in data: # change to 'coins' to enable
     coin_inv = data['coins']
     
 def display_menu():
