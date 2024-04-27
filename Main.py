@@ -4,7 +4,6 @@ import sys
 import math
 from gun import *
 from Enemies import *
-import Graphics
 
 pygame.init()
 pygame.font.init()
@@ -16,6 +15,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Edvins Spel")
 Clock = pygame.time.Clock()
 
+import Graphics
 from Tiles import *
 
 shooting_sound = pygame.mixer.Sound("Sounds/flaunch.wav")
