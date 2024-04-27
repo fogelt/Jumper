@@ -97,8 +97,69 @@ def check_col(rect, speed_x, speed_y):
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
+def display_shop():
+    shop_running = True
+    global bullet_upgrade
+    global bullet_upgrade2
+    global max_hp
+    global hp
+    while shop_running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if mouse_rect.colliderect(bullet_upgrade_rect) and coin_inv >= 50:
+                    bullet_upgrade = True
+                    shop_running = False
+                if mouse_rect.colliderect(bullet_upgrade_rect2) and coin_inv >=100 and bullet_upgrade == True:
+                    bullet_upgrade2 = True
+                    shop_running = False
+                if mouse_rect.colliderect(maxhpup_rect) and coin_inv >=25:
+                    max_hp += 10
+                    hp += 10
+                    shop_running = False
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        screen.fill((0, 0, 0))
+        title_surface = font.render("Upgrading time!", True, (255, 255, 255))
+        title_rect = title_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
+        up1_surface = font.render("1 more bullet", True, (255, 255, 255))
+        up1_rect = up1_surface.get_rect(center=(300, 280))
+        up2_surface = font.render("1 more bullet", True, (255, 255, 255))
+        up2_rect = up2_surface.get_rect(center=(300,380))
+        up3_surface = font.render("10 more max hp", True, (255, 255, 255))
+        up3_rect = up3_surface.get_rect(center=(300,480))
+        c1_surface = font.render(":50", True, (255, 255, 255))
+        c1_rect = c1_surface.get_rect(center=(65, 290))
+        c2_surface = font.render(":100", True, (255, 255, 255))
+        c2_rect = c2_surface.get_rect(center=(65, 390))
+        c3_surface = font.render(":25", True, (255, 255, 255))
+        c3_rect = c3_surface.get_rect(center=(65, 490))
+        bullet_upgrade_rect = (100, 250, 64, 64)
+        bullet_upgrade_rect2 = (100, 350, 64, 64)
+        maxhpup_rect = (100, 450, 64 ,64)
+        coin_rect = (20,280)
+        coin_rect1 = (20, 380)
+        coin_rect2 = (20, 480)
 
+        mouse_rect = pygame.Rect(mouse_x, mouse_y, 1, 1)
 
+        if bullet_upgrade == False:
+            screen.blit(bullet_upgrade_surf, bullet_upgrade_rect)
+            screen.blit(up1_surface, up1_rect)
+            screen.blit(c1_surface, c1_rect)
+            screen.blit(coinanimlist[0], coin_rect)
+        if bullet_upgrade == True and bullet_upgrade2 == False:
+            screen.blit(bullet_upgrade_surf2, bullet_upgrade_rect2)
+            screen.blit(up2_surface, up2_rect)
+            screen.blit(c2_surface, c2_rect)
+            screen.blit(coinanimlist[0], coin_rect1)
+        screen.blit(maxhpup_surf, maxhpup_rect)
+        screen.blit(up3_surface, up3_rect)
+        screen.blit(coinanimlist[0], coin_rect2)
+        screen.blit(c3_surface, c3_rect)
+        screen.blit(title_surface, title_rect)
+        pygame.display.flip()
 def display_menu():
     menu_running = True
     while menu_running:
@@ -111,8 +172,8 @@ def display_menu():
                     menu_running = False
 
         screen.fill((0, 0, 0))
-        title_surface = font.render("Snails", True, (255, 255, 255))
-        start_surface = font.render("Press SPACE to start", True, (255, 255, 255))
+        title_surface = font.render("Snails", False, (255, 255, 255))
+        start_surface = font.render("Press SPACE to start", False, (255, 255, 255))
         title_rect = title_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
         start_rect = start_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
         screen.blit(title_surface, title_rect)
@@ -310,19 +371,9 @@ while running:
         for coin in coins[:]:
             coins.remove(coin)
 
-    bullet_upgrade_render_rect = bullet_upgrade_rect.move(- camera.x, - camera.y)
-    if player_render_rect.colliderect(bullet_upgrade_render_rect) and coin_inv >= 25 and bullet_upgrade == False:
-        bullet_upgrade = True
-        coin_inv -= 25
-    bullet_upgrade_render_rect2 = bullet_upgrade_rect2.move(- camera.x, - camera.y)
-    if player_render_rect.colliderect(bullet_upgrade_render_rect2) and coin_inv >= 25 and bullet_upgrade == True:
-        bullet_upgrade2 = True
-        coin_inv -= 25
-    maxhpup_render_rect = maxhpup_rect.move(- camera.x, - camera.y)
-    if player_render_rect.colliderect(maxhpup_render_rect) and coin_inv >= 10:
-        max_hp += 10
-        hp += 10
-        coin_inv -= 10
+    if seconds == 30 and coin_inv >= 25:
+        display_shop()
+
 
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
@@ -339,9 +390,6 @@ while running:
     screen.blit(hpbarborder_surface, hpbarborder_rect)
     screen.blit(hpbar_surface, hpbar_rect)
     screen.blit(current_hp_surf, (55, 540))
-    screen.blit(bullet_upgrade_surf, bullet_upgrade_render_rect)
-    screen.blit(bullet_upgrade_surf2, bullet_upgrade_render_rect2)
-    screen.blit(maxhpup_surf, maxhpup_render_rect)
     gun.update()
     gun.remove_bullets_off_screen()
 
