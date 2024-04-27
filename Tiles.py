@@ -80,7 +80,7 @@ for row_index, row in enumerate(map):
             collision = False
         elif value == 1010:
             image = tree
-            collision = True
+            collision = False
 
         tile = Tile(image, col_index * SQUARE_SIZE, row_index * SQUARE_SIZE, collision)
         tiles.add(tile)
