@@ -55,6 +55,13 @@ player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(800, 800))
 player_speed = 3  # Adjust the player's movement speed
 
+nomad_surf = Graphics.load("nomad")
+nomad_rect = nomad_surf.get_rect()
+tent_surf = Graphics.load("tent1")
+tent_rect = tent_surf.get_rect()
+palm_surf = Graphics.load("palm")
+palm_rect = palm_surf.get_rect()
+
 # Initialize flags to track key presses
 moving_left = False
 moving_right = False
@@ -259,20 +266,27 @@ while running:
                 moving_up = True
             if event.key == pygame.K_s:
                 moving_down = True
-
             if event.key == pygame.K_e:
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                if bullet_upgrade == True:
-                    bullet_speeds = gun.shoot(gunny_rect, mouse_x, mouse_y, bullet_upgrade2)
-                    shooting_sound.play()
-                    for bullet_speed_x, bullet_speed_y in bullet_speeds:
-                        new_bullet = pygame.Rect(gunny_rect.left, gunny_rect.centery - 30 - gun.bullet_height // 2,
-                                                 gun.bullet_width, gun.bullet_height)
-                        gun.bullets.append((new_bullet, (bullet_speed_x, bullet_speed_y)))
-                else:
-                    bullet_speed_x, bullet_speed_y = gun.shoot1(gunny_rect, mouse_x, mouse_y)
-                    shooting_sound.play()
+                if player_render_rect.colliderect(nomad_render_rect):
+                    display_shop()
+                    moving_left = False
+                    moving_up = False
+                    moving_down = False
+                    moving_right = False
 
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if bullet_upgrade == True:
+                bullet_speeds = gun.shoot(gunny_rect, mouse_x, mouse_y, bullet_upgrade2)
+                shooting_sound.play()
+                for bullet_speed_x, bullet_speed_y in bullet_speeds:
+                    new_bullet = pygame.Rect(gunny_rect.left, gunny_rect.centery - 30 - gun.bullet_height // 2,
+                                                 gun.bullet_width, gun.bullet_height)
+                    gun.bullets.append((new_bullet, (bullet_speed_x, bullet_speed_y)))
+            else:
+                bullet_speed_x, bullet_speed_y = gun.shoot1(gunny_rect, mouse_x, mouse_y)
+                shooting_sound.play()
 
             for bullet, speed in gun.bullets:
                 bullet.x += speed[0]
@@ -358,9 +372,15 @@ while running:
     camera.center = player_rect.center
 
 
-
+    nomad_render_rect = nomad_rect.move(-camera.x, -camera.y)
     player_render_rect = player_rect.move(-camera.x, -camera.y)
-        
+    tent_render_rect = tent_rect.move(-camera.x, -camera.y)
+    palm_render_rect = palm_rect.move(-camera.x, -camera.y)
+
+
+    shop_text_surf = font.render("Press [E] to shop", True, (255, 255, 255))
+    shop_text_rect = shop_text_surf.get_rect(center=(730, 552))
+
     screen.fill((70, 192, 236))
     for tile in tiles:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
@@ -371,7 +391,9 @@ while running:
         if snail_render_rect.centerx < player_render_rect.centerx:
             snail_surf = pygame.transform.flip(snail_surf, True, False)
         screen.blit(snail_surf, snail_render_rect)
-
+    screen.blit(tent_surf, (tent_render_rect.x + 100, tent_render_rect.y + 0))
+    screen.blit(nomad_surf, nomad_render_rect)
+    screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y +200))
     if len(snails) <= 2:
         for _ in range(10):
             snail_rect = snail_surf.get_rect()
@@ -442,12 +464,6 @@ while running:
         for coin in coins[:]:
             coins.remove(coin)
 
-    if seconds == 10:
-        display_shop()
-        moving_up = False
-        moving_down = False
-        moving_right = False
-        moving_left = False
 
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
@@ -463,6 +479,9 @@ while running:
     screen.blit(current_time_surf, (400, 50))
     screen.blit(hpbarborder_surface, hpbarborder_rect)
     screen.blit(hpbar_surface, hpbar_rect)
+    if player_render_rect.colliderect(nomad_render_rect):
+        shop_text_border = pygame.draw.rect(screen, (45, 45, 45), (620, HEIGHT // 2 + 38, 220, 25), 0, 50)
+        screen.blit(shop_text_surf, shop_text_rect)
     screen.blit(current_hp_surf, (55, 540))
     gun.update()
     gun.remove_bullets_off_screen()
