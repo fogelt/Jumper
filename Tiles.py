@@ -46,7 +46,6 @@ class Doodad(pygame.sprite.Sprite):
     # 0 = above the player
     # 1 = behind the player
     def render_order(self):
-        print(self.rect.y)
         if self.rect.y > self.layerOffset:
             return 0
         else:
