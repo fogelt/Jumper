@@ -18,11 +18,12 @@ Clock = pygame.time.Clock()
 import Graphics
 from Tiles import *
 
-shooting_sound = pygame.mixer.Sound("Sounds/flaunch.wav")
+shooting_sound = pygame.mixer.Sound("Sounds/revo.mp3")
 coin1sound = pygame.mixer.Sound("Sounds/coin.wav")
 coin2sound = pygame.mixer.Sound("Sounds/coin2.wav")
 coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
 ouch_sound = pygame.mixer.Sound("Sounds/ouch.mp3")
+snail_hit_sound = pygame.mixer.Sound("Sounds/snail_hit.wav")
 
 # Load player images for different states (idle and jump)
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
@@ -55,7 +56,7 @@ playerwalkleftlist = Graphics.loadList(["playerwalkleft0", "playerwalkleft1", "p
 player_idle_surf = playeridlelist[0]
 player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(800, 800))
-player_speed = 10  # Adjust the player's movement speed
+player_speed = 5  # Adjust the player's movement speed
 
 # Initialize flags to track key presses
 moving_left = False
@@ -102,6 +103,7 @@ def display_shop():
     global bullet_upgrade2
     global max_hp
     global hp
+    global coin_inv
     while shop_running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -292,7 +294,8 @@ while running:
 
 
     if not playing_backgroundmusic:
-        pygame.mixer.music.load("Sounds/backgroundmusic.ogg")
+        pygame.mixer.music.load("Sounds/caravan.ogg.ogg")
+        pygame.mixer.music.set_volume(1)
         pygame.mixer.music.play(loops=-1)
         playing_backgroundmusic = True
 ###CAMERA####
@@ -310,6 +313,8 @@ while running:
     for snail in snails:
         snail.move_towards_target()
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
+        if snail_render_rect.centerx < player_render_rect.centerx:
+            snail_surf = pygame.transform.flip(snail_surf, True, False)
         screen.blit(snail_surf, snail_render_rect)
 
     if len(snails) <= 2:
@@ -322,7 +327,6 @@ while running:
             snails.append(snail)
 
     coin_rect = coin_surf.get_rect()
-
     adjusted_coin_rects = [coin.move(-camera.x, -camera.y) for coin in coins]
     index = player_render_rect.collidelist(adjusted_coin_rects)
     if index != -1:
@@ -352,10 +356,10 @@ while running:
         gunny_offset = (30,15)
         if angle >= 25:
             gunny_offset = (20,-15)
-
     rotated_gunny_image = pygame.transform.rotate(rotated_gunny_image, angle)
     gunny_rect = rotated_gunny_image.get_rect()
     gunny_rect.midleft = (player_render_rect.left, player_render_rect.centery)
+
     hpbar_rect = (50, 545)
     hpbarborder_rect = (50, 545)
     hp_percentage = hp / max_hp
@@ -367,6 +371,7 @@ while running:
         hp -= 10
         last_health_decrease_time = current_time
         ouch_sound.play()
+        snail_hit_sound.play()
         if hp < 0:
             hp = 0
     if hp == 0:
