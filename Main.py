@@ -16,7 +16,7 @@ pygame.display.set_caption("Edvins Spel")
 Clock = pygame.time.Clock()
 
 import Graphics
-from Tiles import *
+import Tiles
 
 shooting_sound = pygame.mixer.Sound("Sounds/revo.mp3")
 coin1sound = pygame.mixer.Sound("Sounds/coin.wav")
@@ -97,7 +97,7 @@ coins = []
 
 def check_col(rect, speed_x, speed_y):
     next_rect = rect.move(speed_x, speed_y)
-    for tile in tiles:
+    for tile in Tiles.tile_list:
         tile_rect = tile.rect.move(camera.topleft)
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
@@ -377,14 +377,15 @@ while running:
     tent_render_rect = tent_rect.move(-camera.x, -camera.y)
     palm_render_rect = palm_rect.move(-camera.x, -camera.y)
 
-
     shop_text_surf = font.render("Press [E] to shop", True, (255, 255, 255))
     shop_text_rect = shop_text_surf.get_rect(center=(730, 552))
 
     screen.fill((70, 192, 236))
-    for tile in tiles:
+    
+    for tile in Tiles.tile_list:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
-    tiles.draw(screen)
+    Tiles.tile_list.draw(screen)
+    
     for snail in snails:
         snail.move_towards_target()
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
@@ -393,7 +394,7 @@ while running:
         screen.blit(snail_surf, snail_render_rect)
     screen.blit(tent_surf, (tent_render_rect.x + 100, tent_render_rect.y + 0))
     screen.blit(nomad_surf, nomad_render_rect)
-    screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y +200))
+    
     if len(snails) <= 2:
         for _ in range(10):
             snail_rect = snail_surf.get_rect()
@@ -472,7 +473,20 @@ while running:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
     gunny_rect = player_render_rect.move(gunny_offset)
     screen.blit(rotated_gunny_image, gunny_rect)
+    
+    doodad_above_player_list = pygame.sprite.Group()
+    doodad_behind_player_list = pygame.sprite.Group()
+    for doodad in Tiles.doodad_list:
+        doodad.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
+        if doodad.render_order() == 0:
+            doodad_above_player_list.add(doodad)
+        else:
+            doodad_behind_player_list.add(doodad)
+            
+    doodad_behind_player_list.draw(screen)
     screen.blit(player_surf, player_render_rect)
+    doodad_above_player_list.draw(screen)
+    
     screen.blit(coinanimlist[0], (15,570))
     screen.blit(coin_inv_text_surf, (40, 570))
     screen.blit(heart_surf, (15, 540))
