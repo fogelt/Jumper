@@ -51,8 +51,7 @@ snailanimlist = [pygame.image.load(f"Graphics/foes/snail{i:02d}.png").convert_al
 snail_surf = snailanimlist[0]
 coinsoundlist = [coin1sound, coin2sound, coin3sound]
 playeridlelist = Graphics.loadList(["playeridle00", "playeridle01", "playeridle02"])
-playerwalkleftlist = Graphics.loadList(["playerwalkleft0", "playerwalkleft1", "playerwalkleft2"])
-playerwalkrightlist = Graphics.loadList(["playerwalkright00", "playerwalkright01", "playerwalkright02"])
+playerwalkleftlist = Graphics.loadList(["playerwalkleft0", "playerwalkleft1", "playerwalkleft2", "playerwalkleft3"])
 player_idle_surf = playeridlelist[0]
 player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(800, 800))
@@ -110,12 +109,15 @@ def display_shop():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if mouse_rect.colliderect(bullet_upgrade_rect) and coin_inv >= 50:
+                    coin_inv -=50
                     bullet_upgrade = True
                     shop_running = False
                 if mouse_rect.colliderect(bullet_upgrade_rect2) and coin_inv >=100 and bullet_upgrade == True:
+                    coin_inv -=100
                     bullet_upgrade2 = True
                     shop_running = False
                 if mouse_rect.colliderect(maxhpup_rect) and coin_inv >=25:
+                    coin_inv -=25
                     max_hp += 10
                     hp += 10
                     shop_running = False
@@ -333,21 +335,27 @@ while running:
 
 
     mouse_pos = pygame.mouse.get_pos()
-    dx = mouse_pos[0] - (player_render_rect.x + player_rect.width + gunny_offset[0])
-    dy = mouse_pos[1] - (player_render_rect.y + gunny_offset[1])
+    dx = mouse_pos[0] - (player_render_rect.x + player_rect.width)
+    dy = mouse_pos[1] - (player_render_rect.y)
     angle = math.degrees(math.atan2(-dy, dx))
-    if mouse_pos[0] > player_render_rect.centerx:
-        player_surf = pygame.transform.flip(player_surf, True, False)
+
     if mouse_pos[0] < player_render_rect.centerx:
         rotated_gunny_image = pygame.transform.flip(gunny_surf, False, True)
-        gunny_offset = (-20,35)
+        player_surf = pygame.transform.flip(player_surf, True, False)
+        gunny_offset = (-10,15)
+        if 100 <= angle <= 150:
+            gunny_offset =(0,-15)
+        if -90 >= angle >= -125:
+            gunny_offset = (0,15)
     else:
         rotated_gunny_image = gunny_surf
-        gunny_offset = (20,35)
+        gunny_offset = (30,15)
+        if angle >= 25:
+            gunny_offset = (20,-15)
+
     rotated_gunny_image = pygame.transform.rotate(rotated_gunny_image, angle)
     gunny_rect = rotated_gunny_image.get_rect()
-    gunny_rect.midright = (player_render_rect.x + gunny_offset[0], player_render_rect.y + gunny_offset[1])
-
+    gunny_rect.midleft = (player_render_rect.left, player_render_rect.centery)
     hpbar_rect = (50, 545)
     hpbarborder_rect = (50, 545)
     hp_percentage = hp / max_hp
@@ -364,7 +372,7 @@ while running:
     if hp == 0:
         display_menu()
         coin_inv = 0
-        hp = 70
+        hp = 100
         start_time = pygame.time.get_ticks()
         for snail in snails[:]:
             snails.remove(snail)
@@ -373,6 +381,10 @@ while running:
 
     if seconds == 30 and coin_inv >= 25:
         display_shop()
+        moving_up = False
+        moving_down = False
+        moving_right = False
+        moving_left = False
 
 
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
@@ -380,13 +392,13 @@ while running:
     gun.check_collisions(snails, camera, coins, coin_rect)
     for coin in coins:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
+    gunny_rect = player_render_rect.move(gunny_offset)
+    screen.blit(rotated_gunny_image, gunny_rect)
     screen.blit(player_surf, player_render_rect)
     screen.blit(coinanimlist[0], (15,570))
     screen.blit(coin_inv_text_surf, (40, 570))
     screen.blit(heart_surf, (15, 540))
     screen.blit(current_time_surf, (400, 50))
-    gunny_rect = player_render_rect.move(gunny_offset)
-    screen.blit(rotated_gunny_image, gunny_rect)
     screen.blit(hpbarborder_surface, hpbarborder_rect)
     screen.blit(hpbar_surface, hpbar_rect)
     screen.blit(current_hp_surf, (55, 540))

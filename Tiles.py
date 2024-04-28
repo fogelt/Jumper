@@ -40,6 +40,7 @@ with open("map.csv", "r") as file:
 
 for row_index, row in enumerate(map):
     for col_index, value in enumerate(row):
+
         image = None
         collision = None
 
