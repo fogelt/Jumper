@@ -55,8 +55,7 @@ class Gun:
             pygame.draw.rect(self.screen, self.bullet_color, bullet)
 
     def remove_bullets_off_screen(self):
-        self.bullets = [(bullet, speed) for bullet, speed in self.bullets if
-                        bullet.x < 800]
+        pass
 
     def check_collisions(self, snails, camera, coins, coin_rect):
         for bullet, _ in self.bullets[:]:

@@ -10,7 +10,7 @@ pygame.font.init()
 pygame.mixer.init()
 font = pygame.font.Font(None, 36)
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1400, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Edvins Spel")
 Clock = pygame.time.Clock()
@@ -22,18 +22,14 @@ shooting_sound = pygame.mixer.Sound("Sounds/revo.mp3")
 coin1sound = pygame.mixer.Sound("Sounds/coin.wav")
 coin2sound = pygame.mixer.Sound("Sounds/coin2.wav")
 coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
+metal1sound = pygame.mixer.Sound("Sounds/metal-small1.wav")
+metal2sound = pygame.mixer.Sound("Sounds/metal-small2.wav")
 ouch_sound = pygame.mixer.Sound("Sounds/ouch.mp3")
 snail_hit_sound = pygame.mixer.Sound("Sounds/snail_hit.wav")
 
 # Load player images for different states (idle and jump)
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
-bullet_upgrade_surf = Graphics.load("bullet_upgrade1")
-bullet_upgrade_surf2 = Graphics.load("bullet_upgrade2")
-bullet_upgrade_rect2 = bullet_upgrade_surf2.get_rect(center = (150, 1250))
-maxhpup_surf = Graphics.load("maxhpup")
-maxhpup_rect = maxhpup_surf.get_rect(center = (1525, 1250))
-bullet_upgrade_rect = bullet_upgrade_surf.get_rect(center = (150, 250))
-poweruplist = [bullet_upgrade_rect, maxhpup_rect]
+
 hp = 100
 max_hp = 100
 hpbar_surface = pygame.Surface((max_hp, 8))
@@ -51,12 +47,13 @@ coin_surf = coinanimlist[0]
 snailanimlist = [pygame.image.load(f"Graphics/foes/snail{i:02d}.png").convert_alpha() for i in range(2)]
 snail_surf = snailanimlist[0]
 coinsoundlist = [coin1sound, coin2sound, coin3sound]
+metalsoundlist = [metal1sound, metal2sound]
 playeridlelist = Graphics.loadList(["playeridle00", "playeridle01", "playeridle02"])
 playerwalkleftlist = Graphics.loadList(["playerwalkleft0", "playerwalkleft1", "playerwalkleft2", "playerwalkleft3"])
 player_idle_surf = playeridlelist[0]
 player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(800, 800))
-player_speed = 5  # Adjust the player's movement speed
+player_speed = 3  # Adjust the player's movement speed
 
 # Initialize flags to track key presses
 moving_left = False
@@ -80,6 +77,7 @@ up_index = 0
 down_index = 0
 coin_index = 0
 coinsound_index = 0
+metalsound_index = 0
 snail_index = 0
 gun = Gun(screen)
 start_time = pygame.time.get_ticks()
@@ -104,65 +102,122 @@ def display_shop():
     global max_hp
     global hp
     global coin_inv
+    global coinsound_index
+    global player_speed
     while shop_running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if mouse_rect.colliderect(bullet_upgrade_rect) and coin_inv >= 50:
+                if mouse_rect.colliderect(up1_border) and bullet_upgrade == False and coin_inv >= 50:
                     coin_inv -=50
+                    coinsoundlist[coinsound_index].play()
+                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
                     bullet_upgrade = True
-                    shop_running = False
-                if mouse_rect.colliderect(bullet_upgrade_rect2) and coin_inv >=100 and bullet_upgrade == True:
-                    coin_inv -=100
+
+                if mouse_rect.colliderect(up2_border) and bullet_upgrade == True and bullet_upgrade2 == False and coin_inv >= 100:
+                    coin_inv -= 100
+                    coinsoundlist[coinsound_index].play()
+                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
                     bullet_upgrade2 = True
-                    shop_running = False
-                if mouse_rect.colliderect(maxhpup_rect) and coin_inv >=25:
+
+                if mouse_rect.colliderect(up3_border) and max_hp <=200 and coin_inv >=25:
                     coin_inv -=25
+                    coinsoundlist[coinsound_index].play()
+                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
                     max_hp += 10
                     hp += 10
+                if mouse_rect.colliderect(up4_border) and player_speed <= 9 and coin_inv >= 25:
+                    coin_inv -= 25
+                    coinsoundlist[coinsound_index].play()
+                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
+                    player_speed += 1
+                if mouse_rect.colliderect(exit_border):
                     shop_running = False
+
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        screen.fill((0, 0, 0))
-        title_surface = font.render("Upgrading time!", True, (255, 255, 255))
+        title_surface = font.render("Shop", True, (255, 255, 255))
         title_rect = title_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
-        up1_surface = font.render("1 more bullet", True, (255, 255, 255))
-        up1_rect = up1_surface.get_rect(center=(300, 280))
-        up2_surface = font.render("1 more bullet", True, (255, 255, 255))
-        up2_rect = up2_surface.get_rect(center=(300,380))
-        up3_surface = font.render("10 more max hp", True, (255, 255, 255))
-        up3_rect = up3_surface.get_rect(center=(300,480))
-        c1_surface = font.render(":50", True, (255, 255, 255))
-        c1_rect = c1_surface.get_rect(center=(65, 290))
-        c2_surface = font.render(":100", True, (255, 255, 255))
-        c2_rect = c2_surface.get_rect(center=(65, 390))
-        c3_surface = font.render(":25", True, (255, 255, 255))
-        c3_rect = c3_surface.get_rect(center=(65, 490))
-        bullet_upgrade_rect = (100, 250, 64, 64)
-        bullet_upgrade_rect2 = (100, 350, 64, 64)
-        maxhpup_rect = (100, 450, 64 ,64)
-        coin_rect = (20,280)
-        coin_rect1 = (20, 380)
-        coin_rect2 = (20, 480)
+        title_border = pygame.draw.rect(screen, (45,45,45), (WIDTH//2 - 50, HEIGHT//2 - 162, 100, 25), 0, 50)
+
+        coin_inv_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 140, HEIGHT // 2 - 112, 210, 25), 0, 50)
+        coin_inv_shop_text = font.render("You have "+str(coin_inv)+"x", True, (255, 255, 255))
+        coin_inv_shop_text_rect = coin_inv_shop_text.get_rect(center=(WIDTH//2 - 50, HEIGHT//2 - 100))
+        screen.blit(coin_inv_shop_text, coin_inv_shop_text_rect)
+        coin_rect_info = (740, 390)
+
+        exit_border = pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 + 100, HEIGHT // 2 + 250, 150, 25), 0, 50)
+        exit_text = font.render("Exit shop", True, (255, 255, 255))
+        exit_text_rect = exit_text.get_rect(center=(WIDTH // 2 + 175, HEIGHT // 2 + 263))
+        screen.blit(exit_text, exit_text_rect)
+
+        up1_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 - 60, 180, 25), 0, 50)
+        up1_surface = font.render("+1 Projectile", True, (255, 255, 255))
+        up1_rect = up1_surface.get_rect(center=(572, 452))
+
+        up2_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 - 10, 180, 25), 0, 50)
+        up2_surface = font.render("+1 Projectile", True, (255, 255, 255))
+        up2_rect = up2_surface.get_rect(center=(572,502))
+
+        up3_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 + 39, 180, 25), 0, 50)
+        up3_surface = font.render("+10 Hitpoints", True, (255, 255, 255))
+        up3_rect = up3_surface.get_rect(center=(572,552))
+
+        up4_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 + 89, 180, 25), 0, 50)
+        up4_surface = font.render("+1 Movement", True, (255, 255, 255))
+        up4_rect = up4_surface.get_rect(center=(572, 602))
+
+        c1_border = pygame.draw.rect(screen, (45, 45, 45), (400, HEIGHT // 2 - 60, 85, 25), 0, 50)
+        c1_surface = font.render("50x", True, (255, 255, 255))
+        c1_rect = c1_surface.get_rect(center=(430, 452))
+        c2_border = pygame.draw.rect(screen, (45, 45, 45), (400, HEIGHT // 2 - 10, 85, 25), 0, 50)
+        c2_surface = font.render("100x", True, (255, 255, 255))
+        c2_rect = c2_surface.get_rect(center=(430, 502))
+
+        c3_border = pygame.draw.rect(screen, (45, 45, 45), (400, HEIGHT // 2 +39, 85, 25), 0, 50)
+        c3_surface = font.render("25x", True, (255, 255, 255))
+        c3_rect = c3_surface.get_rect(center=(430, 552))
+
+        c4_border = pygame.draw.rect(screen, (45, 45, 45), (400, HEIGHT // 2 + 89, 85, 25), 0, 50)
+        c4_surface = font.render("25x", True, (255, 255, 255))
+        c4_rect = c4_surface.get_rect(center=(430, 602))
+        coin_rect4 = (458, 592)
+
+
+
+        coin_rect = (458, 442)
+        coin_rect1 = (458, 492)
+        coin_rect2 = (458, 542)
+
 
         mouse_rect = pygame.Rect(mouse_x, mouse_y, 1, 1)
 
-        if bullet_upgrade == False:
-            screen.blit(bullet_upgrade_surf, bullet_upgrade_rect)
-            screen.blit(up1_surface, up1_rect)
-            screen.blit(c1_surface, c1_rect)
-            screen.blit(coinanimlist[0], coin_rect)
-        if bullet_upgrade == True and bullet_upgrade2 == False:
-            screen.blit(bullet_upgrade_surf2, bullet_upgrade_rect2)
-            screen.blit(up2_surface, up2_rect)
-            screen.blit(c2_surface, c2_rect)
-            screen.blit(coinanimlist[0], coin_rect1)
-        screen.blit(maxhpup_surf, maxhpup_rect)
+
+
+        screen.blit(up1_surface, up1_rect)
+        screen.blit(c1_surface, c1_rect)
+        screen.blit(coinanimlist[0], coin_rect)
+        screen.blit(up2_surface, up2_rect)
+        screen.blit(c2_surface, c2_rect)
+        screen.blit(coinanimlist[0], coin_rect1)
+        if bullet_upgrade == True:
+            pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 - 50, 270, 7), 0, 50)
+        if bullet_upgrade2 == True:
+            pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 - 0, 270, 7), 0, 50)
         screen.blit(up3_surface, up3_rect)
         screen.blit(coinanimlist[0], coin_rect2)
         screen.blit(c3_surface, c3_rect)
+        screen.blit(c4_surface, c4_rect)
+        screen.blit(coinanimlist[0], coin_rect4)
+        screen.blit(up4_surface, up4_rect)
+        if max_hp >= 200:
+            pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 + 50, 270, 7), 0, 50)
+        if player_speed >= 9:
+            pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 + 100, 270, 7), 0, 50)
         screen.blit(title_surface, title_rect)
+        screen.blit(player_surf, player_render_rect)
+        screen.blit(coinanimlist[0], coin_rect_info)
         pygame.display.flip()
 def display_menu():
     menu_running = True
@@ -295,7 +350,7 @@ while running:
 
     if not playing_backgroundmusic:
         pygame.mixer.music.load("Sounds/caravan.ogg.ogg")
-        pygame.mixer.music.set_volume(1)
+        pygame.mixer.music.set_volume(10)
         pygame.mixer.music.play(loops=-1)
         playing_backgroundmusic = True
 ###CAMERA####
@@ -331,9 +386,9 @@ while running:
     index = player_render_rect.collidelist(adjusted_coin_rects)
     if index != -1:
         coins.pop(index)
-        coinsoundlist[coinsound_index].play()
-        coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
-        coin_inv += 1
+        metalsoundlist[metalsound_index].play()
+        metalsound_index = (metalsound_index + 1) % len(metalsoundlist)
+        coin_inv += 100
     coin_inv_text_surf = font.render(": " + str(coin_inv), False, (255, 255, 255))
 
 
@@ -375,22 +430,24 @@ while running:
         if hp < 0:
             hp = 0
     if hp == 0:
+        bullet_upgrade = False
+        bullet_upgrade2 = False
         display_menu()
         coin_inv = 0
         hp = 100
+        max_hp = 100
         start_time = pygame.time.get_ticks()
         for snail in snails[:]:
             snails.remove(snail)
         for coin in coins[:]:
             coins.remove(coin)
 
-    if seconds == 30 and coin_inv >= 25:
+    if seconds == 10:
         display_shop()
         moving_up = False
         moving_down = False
         moving_right = False
         moving_left = False
-
 
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
