@@ -114,6 +114,7 @@ def check_col(rect):
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
+
 def display_shop():
     shop_running = True
     global bullet_upgrade
@@ -397,6 +398,7 @@ while running:
     for tile in tiles:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
     tiles.draw(screen)
+    
     for snail in snails:
         snail.move_towards_target(camera, tiles)
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
