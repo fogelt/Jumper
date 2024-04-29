@@ -101,8 +101,8 @@ last_wave_time = pygame.time.get_ticks()
 def spawn_wave(num_snails):
     for _ in range(num_snails):
         snail_rect = snail_surf.get_rect()
-        snail_rect.x = random.randint(0, 2000)
-        snail_rect.y = random.randint(0, 2000)
+        snail_rect.x = random.randint(0, 1300)
+        snail_rect.y = random.randint(0, 1100)
         snail = Enemy(snail_rect, player_rect)
         snail.rect = snail_rect
         snails.append(snail)
@@ -210,10 +210,7 @@ def display_shop():
         coin_rect1 = (458, 492)
         coin_rect2 = (458, 542)
 
-
         mouse_rect = pygame.Rect(mouse_x, mouse_y, 1, 1)
-
-
 
         screen.blit(up1_surface, up1_rect)
         screen.blit(c1_surface, c1_rect)
@@ -411,7 +408,7 @@ while running:
 
 
     if current_time - last_wave_time >= WAVE_INTERVAL:
-        spawn_wave(10)
+        spawn_wave(5)
         time_since_last_wave = current_time
 
     coin_rect = coin_surf.get_rect()
@@ -485,20 +482,19 @@ while running:
     gunny_rect = player_render_rect.move(gunny_offset)
     screen.blit(rotated_gunny_image, gunny_rect)
     screen.blit(player_surf, player_render_rect)
+    screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y + 150))
     screen.blit(coinanimlist[0], (15,570))
     screen.blit(coin_inv_text_surf, (40, 570))
     screen.blit(heart_surf, (15, 540))
-    screen.blit(current_time_surf, (400, 50))
+    screen.blit(current_time_surf, (WIDTH//2, 50))
     screen.blit(hpbarborder_surface, hpbarborder_rect)
     screen.blit(hpbar_surface, hpbar_rect)
     if player_render_rect.colliderect(nomad_render_rect):
         shop_text_border = pygame.draw.rect(screen, (45, 45, 45), (620, HEIGHT // 2 + 38, 220, 25), 0, 50)
         screen.blit(shop_text_surf, shop_text_rect)
     screen.blit(current_hp_surf, (55, 540))
-    screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y + 150))
     gun.update()
     gun.remove_bullets_off_screen()
-
     pygame.display.update()
 
 pygame.quit()
