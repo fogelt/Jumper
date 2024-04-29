@@ -95,13 +95,12 @@ camera = frame.copy()
 snails = []
 coins = []
 
-def check_col(rect, speed_x, speed_y):
-    next_rect = rect.move(speed_x, speed_y)
+def check_col(rect):
     for tile in tiles:
-        tile_rect = tile.rect.move(camera.topleft)
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
+
 def display_shop():
     shop_running = True
     global bullet_upgrade
@@ -312,19 +311,19 @@ while running:
 
     if moving_left:
         next_player_rect = player_render_rect.move(-player_speed, 0)
-        if not check_col(next_player_rect, -player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.x -= player_speed
     if moving_right:
         next_player_rect = player_render_rect.move(+player_speed, 0)
-        if not check_col(next_player_rect, +player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.x += player_speed
     if moving_up:
         next_player_rect = player_render_rect.move(0, -player_speed)
-        if not check_col(next_player_rect, -player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.y -= player_speed
     if moving_down:
         next_player_rect = player_render_rect.move(0, +player_speed)
-        if not check_col(next_player_rect, +player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.y += player_speed
 
     if moving_left:
@@ -385,8 +384,9 @@ while running:
     for tile in tiles:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
     tiles.draw(screen)
+    
     for snail in snails:
-        snail.move_towards_target()
+        snail.move_towards_target(camera, tiles)
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
         if snail_render_rect.centerx < player_render_rect.centerx:
             snail_surf = pygame.transform.flip(snail_surf, True, False)
