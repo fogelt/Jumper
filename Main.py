@@ -62,6 +62,7 @@ tent_rect = tent_surf.get_rect()
 palm_surf = Graphics.load("palm")
 palm_rect = palm_surf.get_rect()
 
+
 # Initialize flags to track key presses
 moving_left = False
 moving_right = False
@@ -94,11 +95,22 @@ camera = frame.copy()
 
 snails = []
 coins = []
+WAVE_INTERVAL = 5000
+time_since_last_wave = 0
+last_wave_time = pygame.time.get_ticks()
+def spawn_wave(num_snails):
+    for _ in range(num_snails):
+        snail_rect = snail_surf.get_rect()
+        snail_rect.x = random.randint(0, 2000)
+        snail_rect.y = random.randint(0, 2000)
+        snail = Enemy(snail_rect, player_rect)
+        snail.rect = snail_rect
+        snails.append(snail)
+    global last_wave_time
+    last_wave_time = pygame.time.get_ticks()
 
-def check_col(rect, speed_x, speed_y):
-    next_rect = rect.move(speed_x, speed_y)
+def check_col(rect):
     for tile in tiles:
-        tile_rect = tile.rect.move(camera.topleft)
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
@@ -312,19 +324,19 @@ while running:
 
     if moving_left:
         next_player_rect = player_render_rect.move(-player_speed, 0)
-        if not check_col(next_player_rect, -player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.x -= player_speed
     if moving_right:
         next_player_rect = player_render_rect.move(+player_speed, 0)
-        if not check_col(next_player_rect, +player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.x += player_speed
     if moving_up:
         next_player_rect = player_render_rect.move(0, -player_speed)
-        if not check_col(next_player_rect, -player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.y -= player_speed
     if moving_down:
         next_player_rect = player_render_rect.move(0, +player_speed)
-        if not check_col(next_player_rect, +player_speed, 0):
+        if not check_col(next_player_rect):
             player_rect.y += player_speed
 
     if moving_left:
@@ -386,22 +398,19 @@ while running:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
     tiles.draw(screen)
     for snail in snails:
-        snail.move_towards_target()
+        snail.move_towards_target(camera, tiles)
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
         if snail_render_rect.centerx < player_render_rect.centerx:
             snail_surf = pygame.transform.flip(snail_surf, True, False)
         screen.blit(snail_surf, snail_render_rect)
     screen.blit(tent_surf, (tent_render_rect.x + 100, tent_render_rect.y + 0))
     screen.blit(nomad_surf, nomad_render_rect)
-    screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y +200))
-    if len(snails) <= 2:
-        for _ in range(10):
-            snail_rect = snail_surf.get_rect()
-            snail_rect.x = random.randint(0, 2000)
-            snail_rect.y = random.randint(0, 2000)
-            snail = Enemy(snail_rect, player_rect)
-            snail.rect = snail_rect
-            snails.append(snail)
+
+
+
+    if current_time - last_wave_time >= WAVE_INTERVAL:
+        spawn_wave(10)
+        time_since_last_wave = current_time
 
     coin_rect = coin_surf.get_rect()
     adjusted_coin_rects = [coin.move(-camera.x, -camera.y) for coin in coins]
@@ -410,7 +419,7 @@ while running:
         coins.pop(index)
         metalsoundlist[metalsound_index].play()
         metalsound_index = (metalsound_index + 1) % len(metalsoundlist)
-        coin_inv += 100
+        coin_inv += 1
     coin_inv_text_surf = font.render(": " + str(coin_inv), False, (255, 255, 255))
 
 
@@ -468,6 +477,7 @@ while running:
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
     gun.check_collisions(snails, camera, coins, coin_rect)
+
     for coin in coins:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
     gunny_rect = player_render_rect.move(gunny_offset)
@@ -483,6 +493,7 @@ while running:
         shop_text_border = pygame.draw.rect(screen, (45, 45, 45), (620, HEIGHT // 2 + 38, 220, 25), 0, 50)
         screen.blit(shop_text_surf, shop_text_rect)
     screen.blit(current_hp_surf, (55, 540))
+    screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y + 150))
     gun.update()
     gun.remove_bullets_off_screen()
 
