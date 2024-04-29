@@ -8,14 +8,20 @@ dict = {}
 for file in files:
     base = os.path.basename(file)
     name = os.path.splitext(base)[0]
-    dict[name] = file
+    dict[name.lower()] = pygame.image.load(file).convert_alpha()
 
 def load(name):
-    return pygame.image.load(dict[name]).convert_alpha()
+    return dict[name]
 
 def loadList(names):
     list = []
     for name in names:
-        list.append(pygame.image.load(dict[name]).convert_alpha())
+        list.append(dict[name.lower()])
     return list
+
+def loadDict(names):
+    d = {}
+    for name in names:
+        d[name] = dict[name.lower()]
+    return d
         

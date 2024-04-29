@@ -3,13 +3,15 @@ import pygame
 import random
 
 
+
+
 class Gun:
     def __init__(self, screen):
         self.screen = screen
-        self.bullet_width = 10
-        self.bullet_height = 10
-        self.bullet_color = (255, 0, 0)
-        self.bullet_speed = 10
+        self.bullet_width = 6
+        self.bullet_height = 6
+        self.bullet_color = (0, 0, 0)
+        self.bullet_speed = 20
         self.bullets = []  # Each bullet will be a tuple (rect, speed)
 
     def shoot1(self, gunny_rect, mouse_x, mouse_y):
@@ -53,8 +55,7 @@ class Gun:
             pygame.draw.rect(self.screen, self.bullet_color, bullet)
 
     def remove_bullets_off_screen(self):
-        self.bullets = [(bullet, speed) for bullet, speed in self.bullets if
-                        bullet.x < 800]
+        pass
 
     def check_collisions(self, snails, camera, coins, coin_rect):
         for bullet, _ in self.bullets[:]:
