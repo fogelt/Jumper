@@ -4,6 +4,8 @@ import sys
 import math
 from gun import *
 from Enemies import *
+import Serializer
+
 
 pygame.init()
 pygame.font.init()
@@ -95,14 +97,21 @@ camera = frame.copy()
 
 snails = []
 coins = []
+
+
+data = Serializer.load('data.pickle')
+# Load saved data
+if '.' in data: # change to 'coins' to enable
+    coin_inv = data['coins']
+    
 WAVE_INTERVAL = 5000
 time_since_last_wave = 0
 last_wave_time = pygame.time.get_ticks()
 def spawn_wave(num_snails):
     for _ in range(num_snails):
         snail_rect = snail_surf.get_rect()
-        snail_rect.x = random.randint(0, 2000)
-        snail_rect.y = random.randint(0, 2000)
+        snail_rect.x = random.randint(0, 1300)
+        snail_rect.y = random.randint(0, 1100)
         snail = Enemy(snail_rect, player_rect)
         snail.rect = snail_rect
         snails.append(snail)
@@ -239,6 +248,7 @@ def display_shop():
         screen.blit(player_surf, player_render_rect)
         screen.blit(coinanimlist[0], coin_rect_info)
         pygame.display.flip()
+
 def display_menu():
     menu_running = True
     while menu_running:
@@ -268,7 +278,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+            
+            # Data you want to save
+            data = {'coins': coin_inv, 'otherData': 1, 'etc': 2}
+            Serializer.save(data, 'data.pickle')
+                
         # Set flags when keys are pressed or released
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
