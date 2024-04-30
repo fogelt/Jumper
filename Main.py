@@ -108,12 +108,10 @@ snails = []
 skeles = []
 coins = []
 
-<<<<<<< HEAD
 def check_col(rect, speed_x, speed_y):
     next_rect = rect.move(speed_x, speed_y)
     for tile in Tiles.tile_list:
         tile_rect = tile.rect.move(camera.topleft)
-=======
 
 data = Serializer.load('data.pickle')
 # Load saved data
@@ -146,7 +144,6 @@ def spawn_skele_wave(num_skeles):
 
 def check_col(rect):
     for tile in tiles:
->>>>>>> main
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
@@ -465,11 +462,8 @@ while running:
     
     for tile in Tiles.tile_list:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
-<<<<<<< HEAD
     Tiles.tile_list.draw(screen)
-=======
     tiles.draw(screen)
->>>>>>> main
     
     for snail in snails:
         snail.move_towards_target(camera, tiles)
@@ -485,26 +479,11 @@ while running:
         screen.blit(skele_surf, skele_render_rect)
     screen.blit(tent_surf, (tent_render_rect.x + 100, tent_render_rect.y + 0))
     screen.blit(nomad_surf, nomad_render_rect)
-<<<<<<< HEAD
-    
-    if len(snails) <= 2:
-        for _ in range(10):
-            snail_rect = snail_surf.get_rect()
-            snail_rect.x = random.randint(0, 2000)
-            snail_rect.y = random.randint(0, 2000)
-            snail = Enemy(snail_rect, player_rect)
-            snail.rect = snail_rect
-            snails.append(snail)
-=======
-
-
 
     if current_time - last_wave_time >= WAVE_INTERVAL:
         spawn_snail_wave(1)
         spawn_skele_wave(1)
         time_since_last_wave = current_time
-
->>>>>>> main
 
     coin_rect = coin_surf.get_rect()
     adjusted_coin_rects = [coin.move(-camera.x, -camera.y) for coin in coins]
@@ -597,12 +576,9 @@ while running:
             
     doodad_behind_player_list.draw(screen)
     screen.blit(player_surf, player_render_rect)
-<<<<<<< HEAD
     doodad_above_player_list.draw(screen)
     
-=======
     screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y + 150))
->>>>>>> main
     screen.blit(coinanimlist[0], (15,570))
     screen.blit(coin_inv_text_surf, (40, 570))
     screen.blit(heart_surf, (15, 540))
