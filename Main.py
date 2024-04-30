@@ -4,6 +4,8 @@ import sys
 import math
 from gun import *
 from Enemies import *
+import Serializer
+
 
 pygame.init()
 pygame.font.init()
@@ -56,11 +58,17 @@ player_rect = player_surf.get_rect(center=(800, 800))
 player_speed = 3  # Adjust the player's movement speed
 
 nomad_surf = Graphics.load("nomad")
-nomad_rect = nomad_surf.get_rect()
+nomad_rect = nomad_surf.get_rect(center=(900,400))
 tent_surf = Graphics.load("tent1")
-tent_rect = tent_surf.get_rect()
+tent_rect = tent_surf.get_rect(center=(910,380))
 palm_surf = Graphics.load("palm")
 palm_rect = palm_surf.get_rect()
+main_menu_surf = Graphics.load("main_menu2")
+main_menu_rect = main_menu_surf.get_rect()
+plank_surf = Graphics.load("plank")
+scorch_surf = Graphics.load("scorch")
+platform_surf = pygame.image.load("Graphics/platform.png")
+platform_rect = platform_surf.get_rect(center=(700, 250))
 
 
 # Initialize flags to track key presses
@@ -95,7 +103,14 @@ camera = frame.copy()
 
 snails = []
 coins = []
-WAVE_INTERVAL = 5000
+
+
+data = Serializer.load('data.pickle')
+# Load saved data
+if '.' in data: # change to 'coins' to enable
+    coin_inv = data['coins']
+    
+WAVE_INTERVAL = 30000
 time_since_last_wave = 0
 last_wave_time = pygame.time.get_ticks()
 def spawn_wave(num_snails):
@@ -236,6 +251,7 @@ def display_shop():
         screen.blit(player_surf, player_render_rect)
         screen.blit(coinanimlist[0], coin_rect_info)
         pygame.display.flip()
+
 def display_menu():
     menu_running = True
     while menu_running:
@@ -243,17 +259,21 @@ def display_menu():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if mouse_rect.colliderect(exit_border):
                     menu_running = False
 
-        screen.fill((0, 0, 0))
-        title_surface = font.render("Snails", False, (255, 255, 255))
-        start_surface = font.render("Press SPACE to start", False, (255, 255, 255))
-        title_rect = title_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
-        start_rect = start_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
-        screen.blit(title_surface, title_rect)
-        screen.blit(start_surface, start_rect)
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        mouse_rect = pygame.Rect(mouse_x, mouse_y, 1, 1)
+        screen.blit(main_menu_surf, main_menu_rect)
+        screen.blit(scorch_surf, (130, 140))
+        screen.blit(plank_surf, (130,280))
+
+        exit_border = pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 + 100, HEIGHT // 2 + 250, 150, 25), 0, 50)
+        exit_text = font.render("Start game", True, (255, 255, 255))
+        exit_text_rect = exit_text.get_rect(center=(WIDTH // 2 + 175, HEIGHT // 2 + 263))
+        screen.blit(exit_text, exit_text_rect)
 
         pygame.display.flip()
 
@@ -265,7 +285,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+            
+            # Data you want to save
+            data = {'coins': coin_inv, 'otherData': 1, 'etc': 2}
+            Serializer.save(data, 'data.pickle')
+                
         # Set flags when keys are pressed or released
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
@@ -386,6 +410,7 @@ while running:
     player_render_rect = player_rect.move(-camera.x, -camera.y)
     tent_render_rect = tent_rect.move(-camera.x, -camera.y)
     palm_render_rect = palm_rect.move(-camera.x, -camera.y)
+    platform_render_rect = platform_rect.move(-camera.x, -camera.y)
 
 
     shop_text_surf = font.render("Press [E] to shop", True, (255, 255, 255))
@@ -480,6 +505,7 @@ while running:
     for coin in coins:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
     gunny_rect = player_render_rect.move(gunny_offset)
+    screen.blit(platform_surf, platform_render_rect)
     screen.blit(rotated_gunny_image, gunny_rect)
     screen.blit(player_surf, player_render_rect)
     screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y + 150))
