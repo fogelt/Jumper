@@ -57,15 +57,20 @@ class Gun:
     def remove_bullets_off_screen(self):
         pass
 
-    def check_collisions(self, snails, camera, coins, coin_rect):
+    def check_collisions(self, snails, skeles, camera, coins, coin_rect):
         for bullet, _ in self.bullets[:]:
             adjusted_snail_rects = [snail.rect.move(-camera.x, -camera.y) for snail in snails]
             index = bullet.collidelist(adjusted_snail_rects)
+            adjusted_skele_rects = [skele.rect.move(-camera.x, -camera.y) for skele in skeles]
+            index1 = bullet.collidelist(adjusted_skele_rects)
             if index != -1:  # If collision detected
                 removed_snail = snails.pop(index)
                 coin_rect.x = removed_snail.rect.x
                 coin_rect.y = removed_snail.rect.y
                 coins.append(coin_rect)
                 self.bullets.remove((bullet, _))
+
+            if index1 != -1:  # If collision detected
+                removed_skele = skeles.pop(index1)
 
                 break

@@ -14,7 +14,7 @@ font = pygame.font.Font(None, 36)
 
 WIDTH, HEIGHT = 1400, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Edvins Spel")
+pygame.display.set_caption("Scorch Survival")
 Clock = pygame.time.Clock()
 
 import Graphics
@@ -48,6 +48,8 @@ coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alp
 coin_surf = coinanimlist[0]
 snailanimlist = [pygame.image.load(f"Graphics/foes/snail{i:02d}.png").convert_alpha() for i in range(2)]
 snail_surf = snailanimlist[0]
+skeleanimlist = Graphics.loadList(["skele0", "skele1", "skele2", "skele3"])
+skele_surf = skeleanimlist[0]
 coinsoundlist = [coin1sound, coin2sound, coin3sound]
 metalsoundlist = [metal1sound, metal2sound]
 playeridlelist = Graphics.loadList(["playeridle00", "playeridle01", "playeridle02"])
@@ -65,10 +67,10 @@ palm_surf = Graphics.load("palm")
 palm_rect = palm_surf.get_rect()
 main_menu_surf = Graphics.load("main_menu2")
 main_menu_rect = main_menu_surf.get_rect()
-plank_surf = Graphics.load("plank")
-scorch_surf = Graphics.load("scorch")
+scorch_surf = pygame.image.load("Graphics/scorch.png")
 platform_surf = pygame.image.load("Graphics/platform.png")
 platform_rect = platform_surf.get_rect(center=(700, 250))
+pygame.display.set_icon(snail_surf)
 
 
 # Initialize flags to track key presses
@@ -95,6 +97,7 @@ coin_index = 0
 coinsound_index = 0
 metalsound_index = 0
 snail_index = 0
+skele_index = 0
 gun = Gun(screen)
 start_time = pygame.time.get_ticks()
 
@@ -102,6 +105,7 @@ frame = screen.get_rect()
 camera = frame.copy()
 
 snails = []
+skeles = []
 coins = []
 
 
@@ -110,10 +114,10 @@ data = Serializer.load('data.pickle')
 if '.' in data: # change to 'coins' to enable
     coin_inv = data['coins']
     
-WAVE_INTERVAL = 30000
+WAVE_INTERVAL = 2000
 time_since_last_wave = 0
 last_wave_time = pygame.time.get_ticks()
-def spawn_wave(num_snails):
+def spawn_snail_wave(num_snails):
     for _ in range(num_snails):
         snail_rect = snail_surf.get_rect()
         snail_rect.x = random.randint(0, 1300)
@@ -121,6 +125,16 @@ def spawn_wave(num_snails):
         snail = Enemy(snail_rect, player_rect)
         snail.rect = snail_rect
         snails.append(snail)
+    global last_wave_time
+    last_wave_time = pygame.time.get_ticks()
+def spawn_skele_wave(num_skeles):
+    for _ in range(num_skeles):
+        skele_rect = skele_surf.get_rect()
+        skele_rect.x = random.randint(0, 1300)
+        skele_rect.y = random.randint(0, 1100)
+        skele = Enemy(skele_rect, player_rect)
+        skele.rect = skele_rect
+        skeles.append(skele)
     global last_wave_time
     last_wave_time = pygame.time.get_ticks()
 
@@ -187,13 +201,13 @@ def display_shop():
         exit_text_rect = exit_text.get_rect(center=(WIDTH // 2 + 175, HEIGHT // 2 + 263))
         screen.blit(exit_text, exit_text_rect)
 
-        up1_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 - 60, 180, 25), 0, 50)
-        up1_surface = font.render("+1 Projectile", True, (255, 255, 255))
-        up1_rect = up1_surface.get_rect(center=(572, 452))
+        up1_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 - 60, 200, 25), 0, 50)
+        up1_surface = font.render("Broken shotgun", True, (255, 255, 255))
+        up1_rect = up1_surface.get_rect(center=(592, 452))
 
-        up2_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 - 10, 180, 25), 0, 50)
-        up2_surface = font.render("+1 Projectile", True, (255, 255, 255))
-        up2_rect = up2_surface.get_rect(center=(572,502))
+        up2_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 - 10, 200, 25), 0, 50)
+        up2_surface = font.render("Repair shotgun", True, (255, 255, 255))
+        up2_rect = up2_surface.get_rect(center=(592,502))
 
         up3_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 + 39, 180, 25), 0, 50)
         up3_surface = font.render("+10 Hitpoints", True, (255, 255, 255))
@@ -236,7 +250,9 @@ def display_shop():
         if bullet_upgrade == True:
             pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 - 50, 270, 7), 0, 50)
         if bullet_upgrade2 == True:
-            pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 - 0, 270, 7), 0, 50)
+            pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 - 0, 290, 7), 0, 50)
+        if bullet_upgrade == False:
+            pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 - 300, HEIGHT // 2 - 0, 290, 7), 0, 50)
         screen.blit(up3_surface, up3_rect)
         screen.blit(coinanimlist[0], coin_rect2)
         screen.blit(c3_surface, c3_rect)
@@ -260,20 +276,39 @@ def display_menu():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if mouse_rect.colliderect(exit_border):
+                if mouse_rect.colliderect(start_border):
                     menu_running = False
+                if mouse_rect.colliderect(settings_border):
+                    pass
+                if mouse_rect.colliderect(quit_border):
+                    sys.exit()
 
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
         mouse_rect = pygame.Rect(mouse_x, mouse_y, 1, 1)
         screen.blit(main_menu_surf, main_menu_rect)
-        screen.blit(scorch_surf, (130, 140))
-        screen.blit(plank_surf, (130,280))
+        screen.blit(scorch_surf, (400, 30))
 
-        exit_border = pygame.draw.rect(screen, (205, 45, 45), (WIDTH // 2 + 100, HEIGHT // 2 + 250, 150, 25), 0, 50)
-        exit_text = font.render("Start game", True, (255, 255, 255))
-        exit_text_rect = exit_text.get_rect(center=(WIDTH // 2 + 175, HEIGHT // 2 + 263))
-        screen.blit(exit_text, exit_text_rect)
+        start_border1 = pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 2.61, 250, 35), 0, 5)
+        start_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 2.61, 250, 35), 4, 5)
+        start_text = font.render("Start game", True, (255, 255, 255))
+        start_text_rect = start_text.get_rect(center=(WIDTH // 2, HEIGHT // 2.5))
+
+        settings_border1 = pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 2.18, 250, 35), 0, 5)
+        settings_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 2.18, 250, 35), 4, 5)
+        settings_text = font.render("Settings", True, (255, 255, 255))
+        settings_text_rect = settings_text.get_rect(center=(WIDTH // 2.03, HEIGHT // 2.1))
+
+        quit_border1 = pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 1.86, 250, 35), 0, 5)
+        quit_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 1.86, 250, 35), 4, 5)
+        quit_text = font.render("Quit game", True, (255, 255, 255))
+        quit_text_rect = quit_text.get_rect(center=(WIDTH // 2, HEIGHT // 1.8))
+
+
+
+        screen.blit(start_text, start_text_rect)
+        screen.blit(settings_text, settings_text_rect)
+        screen.blit(quit_text, quit_text_rect)
 
         pygame.display.flip()
 
@@ -394,11 +429,15 @@ while running:
     snail_index += animation_speed
     if snail_index >= len(snailanimlist):
         snail_index = 0
+    skele_surf = skeleanimlist[int(skele_index)]
+    skele_index += animation_speed
+    if skele_index >= len(skeleanimlist):
+        skele_index = 0
 
 
     if not playing_backgroundmusic:
         pygame.mixer.music.load("Sounds/caravan.ogg.ogg")
-        pygame.mixer.music.set_volume(10)
+        pygame.mixer.music.set_volume(1)
         pygame.mixer.music.play(loops=-1)
         playing_backgroundmusic = True
 ###CAMERA####
@@ -427,14 +466,22 @@ while running:
         if snail_render_rect.centerx < player_render_rect.centerx:
             snail_surf = pygame.transform.flip(snail_surf, True, False)
         screen.blit(snail_surf, snail_render_rect)
+    for skele in skeles:
+        skele.move_towards_target(camera, tiles)
+        skele_render_rect = skele.rect.move(-camera.x, -camera.y)
+        if skele_render_rect.centerx < player_render_rect.centerx:
+            skele_surf = pygame.transform.flip(skele_surf, True, False)
+        screen.blit(skele_surf, skele_render_rect)
     screen.blit(tent_surf, (tent_render_rect.x + 100, tent_render_rect.y + 0))
     screen.blit(nomad_surf, nomad_render_rect)
 
 
 
     if current_time - last_wave_time >= WAVE_INTERVAL:
-        spawn_wave(5)
+        spawn_snail_wave(1)
+        spawn_skele_wave(1)
         time_since_last_wave = current_time
+
 
     coin_rect = coin_surf.get_rect()
     adjusted_coin_rects = [coin.move(-camera.x, -camera.y) for coin in coins]
@@ -477,11 +524,19 @@ while running:
     hpbar_surface = pygame.transform.scale(hpbar_surface, (filled_width, 7))
     adjusted_snail_rects = [snail.rect.move(-camera.x, -camera.y) for snail in snails]
     index1 = player_render_rect.collidelist(adjusted_snail_rects)
+    adjusted_skele_rects = [skele.rect.move(-camera.x, -camera.y) for skele in skeles]
+    index2 = player_render_rect.collidelist(adjusted_skele_rects)
     if index1 != -1 and current_time - last_health_decrease_time >= grace_period:
-        hp -= 10
+        hp -= 5
         last_health_decrease_time = current_time
         ouch_sound.play()
         snail_hit_sound.play()
+        if hp < 0:
+            hp = 0
+    if index2 != -1 and current_time - last_health_decrease_time >= grace_period:
+        hp -= 10
+        last_health_decrease_time = current_time
+        ouch_sound.play()
         if hp < 0:
             hp = 0
     if hp == 0:
@@ -500,7 +555,7 @@ while running:
 
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
-    gun.check_collisions(snails, camera, coins, coin_rect)
+    gun.check_collisions(snails, skeles, camera, coins, coin_rect)
 
     for coin in coins:
         screen.blit(coin_surf, (coin.x - camera.x, coin.y - camera.y))
