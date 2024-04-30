@@ -15,3 +15,4 @@ class Type(Enum):
     TREE = 1010, True
     GRASS0 = 1011, False
     GRASS1 = 1012, False
+    colgrass = 2000, True
