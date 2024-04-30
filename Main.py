@@ -143,7 +143,7 @@ def spawn_skele_wave(num_skeles):
     last_wave_time = pygame.time.get_ticks()
 
 def check_col(rect):
-    for tile in tiles:
+    for tile in Tiles.tile_list:
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
@@ -463,16 +463,16 @@ while running:
     for tile in Tiles.tile_list:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
     Tiles.tile_list.draw(screen)
-    tiles.draw(screen)
+    Tiles.tile_list.draw(screen)
     
     for snail in snails:
-        snail.move_towards_target(camera, tiles)
+        snail.move_towards_target(camera, Tiles.tile_list)
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
         if snail_render_rect.centerx < player_render_rect.centerx:
             snail_surf = pygame.transform.flip(snail_surf, True, False)
         screen.blit(snail_surf, snail_render_rect)
     for skele in skeles:
-        skele.move_towards_target(camera, tiles)
+        skele.move_towards_target(camera, Tiles.tile_list)
         skele_render_rect = skele.rect.move(-camera.x, -camera.y)
         if skele_render_rect.centerx < player_render_rect.centerx:
             skele_surf = pygame.transform.flip(skele_surf, True, False)
