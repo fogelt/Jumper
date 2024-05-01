@@ -1,21 +1,10 @@
-import pygame
-from pygame.locals import *
 import sys
-import math
-from gun import *
-from Enemies import *
+
 import Serializer
+from Enemies import *
+from gun import *
 
-pygame.init()
-pygame.font.init()
-pygame.mixer.init()
-font = pygame.font.Font(None, 36)
-
-WIDTH, HEIGHT = 1400, 1000
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Scorch Survival")
-Clock = pygame.time.Clock()
-
+import scripts.initializer as initializer
 import scripts.music_controller as music_controller
 import scripts.sound_controller as sound_controller
 import scripts.graphics_controller as graphics_controller
@@ -24,6 +13,10 @@ import scripts.map_controller as map_controller
 import scripts.sound_enum as sound_enum
 import scripts.graphics_enum as graphics_enum
 
+font = initializer.get_font()
+screen = initializer.get_screen()
+clock = initializer.get_clock()
+
 # Load player images for different states (idle and jump)
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
 
@@ -31,10 +24,10 @@ hp = 100
 max_hp = 100
 hpbar_surface = pygame.Surface((max_hp, 8))
 hpbar_rect = hpbar_surface.get_rect
-hpbar_surface.fill((255,0,0))
+hpbar_surface.fill((255, 0, 0))
 hpbarborder_surface = pygame.Surface((max_hp, 9))
 hpbarborder_rect = hpbarborder_surface.get_rect()
-hpbarborder_surface.fill((0,0,0))
+hpbarborder_surface.fill((0, 0, 0))
 last_health_decrease_time = 0
 grace_period = 500
 gunny_surf = pygame.image.load("Graphics/items/gunny.png").convert_alpha()
@@ -54,9 +47,9 @@ player_rect = player_surf.get_rect(center=(800, 800))
 player_speed = 3  # Adjust the player's movement speed
 
 nomad_surf = graphics_controller.load(graphics_enum.Type.NOMAD)
-nomad_rect = nomad_surf.get_rect(center=(900,400))
+nomad_rect = nomad_surf.get_rect(center=(900, 400))
 tent_surf = graphics_controller.load(graphics_enum.Type.TENT)
-tent_rect = tent_surf.get_rect(center=(910,380))
+tent_rect = tent_surf.get_rect(center=(910, 380))
 palm_surf = graphics_controller.load(graphics_enum.Type.PALM)
 palm_rect = palm_surf.get_rect()
 main_menu_surf = graphics_controller.load(graphics_enum.Type.MAIN_MENU)
@@ -65,7 +58,6 @@ scorch_surf = pygame.image.load("Graphics/scorch.png")
 platform_surf = pygame.image.load("Graphics/platform.png")
 platform_rect = platform_surf.get_rect(center=(700, 250))
 pygame.display.set_icon(snail_surf)
-
 
 # Initialize flags to track key presses
 moving_left = False
@@ -101,19 +93,23 @@ snails = []
 skeles = []
 coins = []
 
+
 def check_col(rect, speed_x, speed_y):
     next_rect = rect.move(speed_x, speed_y)
-    for tile in map_controller.tile_list:
-        tile_rect = tile.rect.move(camera.topleft)
+    for tile_ in map_controller.tile_list:
+        tile_rect = tile_.rect.move(camera.topleft)
+
 
 data = Serializer.load('data.pickle')
 # Load saved data
-if '.' in data: # change to 'coins' to enable
+if '.' in data:  # change to 'coins' to enable
     coin_inv = data['coins']
-    
+
 WAVE_INTERVAL = 2000
 time_since_last_wave = 0
 last_wave_time = pygame.time.get_ticks()
+
+
 def spawn_snail_wave(num_snails):
     for _ in range(num_snails):
         snail_rect = snail_surf.get_rect()
@@ -124,6 +120,8 @@ def spawn_snail_wave(num_snails):
         snails.append(snail)
     global last_wave_time
     last_wave_time = pygame.time.get_ticks()
+
+
 def spawn_skele_wave(num_skeles):
     for _ in range(num_skeles):
         skele_rect = skele_surf.get_rect()
@@ -135,15 +133,17 @@ def spawn_skele_wave(num_skeles):
     global last_wave_time
     last_wave_time = pygame.time.get_ticks()
 
+
 def check_col(rect):
-    for tile in map_controller.tile_list:
-        if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
+    for tile_ in map_controller.tile_list:
+        if tile_.collision and pygame.Rect.colliderect(tile_.rect, rect):
             return True
     return False
 
+
 def display_shop():
     shop_running = True
-    global bullet_upgrade
+    global bullet_upgrade, up4_border
     global bullet_upgrade2
     global max_hp
     global hp
@@ -156,17 +156,18 @@ def display_shop():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if mouse_rect.colliderect(up1_border) and bullet_upgrade == False and coin_inv >= 50:
-                    coin_inv -=50
+                    coin_inv -= 50
                     sound_controller.play_random_sound(sound_enum.Type.COIN)
                     bullet_upgrade = True
 
-                if mouse_rect.colliderect(up2_border) and bullet_upgrade == True and bullet_upgrade2 == False and coin_inv >= 100:
+                if mouse_rect.colliderect(
+                        up2_border) and bullet_upgrade == True and bullet_upgrade2 == False and coin_inv >= 100:
                     coin_inv -= 100
                     sound_controller.play_random_sound(sound_enum.Type.COIN)
                     bullet_upgrade2 = True
 
-                if mouse_rect.colliderect(up3_border) and max_hp <=200 and coin_inv >=25:
-                    coin_inv -=25
+                if mouse_rect.colliderect(up3_border) and max_hp <= 200 and coin_inv >= 25:
+                    coin_inv -= 25
                     sound_controller.play_random_sound(sound_enum.Type.COIN)
                     max_hp += 10
                     hp += 10
@@ -180,11 +181,11 @@ def display_shop():
         mouse_x, mouse_y = pygame.mouse.get_pos()
         title_surface = font.render("Shop", True, (255, 255, 255))
         title_rect = title_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
-        title_border = pygame.draw.rect(screen, (45,45,45), (WIDTH//2 - 50, HEIGHT//2 - 162, 100, 25), 0, 50)
+        title_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 50, HEIGHT // 2 - 162, 100, 25), 0, 50)
 
         coin_inv_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 140, HEIGHT // 2 - 112, 210, 25), 0, 50)
-        coin_inv_shop_text = font.render("You have "+str(coin_inv)+"x", True, (255, 255, 255))
-        coin_inv_shop_text_rect = coin_inv_shop_text.get_rect(center=(WIDTH//2 - 50, HEIGHT//2 - 100))
+        coin_inv_shop_text = font.render("You have " + str(coin_inv) + "x", True, (255, 255, 255))
+        coin_inv_shop_text_rect = coin_inv_shop_text.get_rect(center=(WIDTH // 2 - 50, HEIGHT // 2 - 100))
         screen.blit(coin_inv_shop_text, coin_inv_shop_text_rect)
         coin_rect_info = (740, 390)
 
@@ -199,11 +200,11 @@ def display_shop():
 
         up2_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 - 10, 200, 25), 0, 50)
         up2_surface = font.render("Repair shotgun", True, (255, 255, 255))
-        up2_rect = up2_surface.get_rect(center=(592,502))
+        up2_rect = up2_surface.get_rect(center=(592, 502))
 
         up3_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 + 39, 180, 25), 0, 50)
         up3_surface = font.render("+10 Hitpoints", True, (255, 255, 255))
-        up3_rect = up3_surface.get_rect(center=(572,552))
+        up3_rect = up3_surface.get_rect(center=(572, 552))
 
         up4_border = pygame.draw.rect(screen, (45, 45, 45), (WIDTH // 2 - 210, HEIGHT // 2 + 89, 180, 25), 0, 50)
         up4_surface = font.render("+1 Movement", True, (255, 255, 255))
@@ -216,7 +217,7 @@ def display_shop():
         c2_surface = font.render("100x", True, (255, 255, 255))
         c2_rect = c2_surface.get_rect(center=(430, 502))
 
-        c3_border = pygame.draw.rect(screen, (45, 45, 45), (400, HEIGHT // 2 +39, 85, 25), 0, 50)
+        c3_border = pygame.draw.rect(screen, (45, 45, 45), (400, HEIGHT // 2 + 39, 85, 25), 0, 50)
         c3_surface = font.render("25x", True, (255, 255, 255))
         c3_rect = c3_surface.get_rect(center=(430, 552))
 
@@ -224,8 +225,6 @@ def display_shop():
         c4_surface = font.render("25x", True, (255, 255, 255))
         c4_rect = c4_surface.get_rect(center=(430, 602))
         coin_rect4 = (458, 592)
-
-
 
         coin_rect = (458, 442)
         coin_rect1 = (458, 492)
@@ -260,6 +259,7 @@ def display_shop():
         screen.blit(coinanimlist[0], coin_rect_info)
         pygame.display.flip()
 
+
 def display_menu():
     menu_running = True
     while menu_running:
@@ -274,7 +274,6 @@ def display_menu():
                     pass
                 if mouse_rect.colliderect(quit_border):
                     sys.exit()
-
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
         mouse_rect = pygame.Rect(mouse_x, mouse_y, 1, 1)
@@ -296,13 +295,12 @@ def display_menu():
         quit_text = font.render("Quit game", True, (255, 255, 255))
         quit_text_rect = quit_text.get_rect(center=(WIDTH // 2, HEIGHT // 1.8))
 
-
-
         screen.blit(start_text, start_text_rect)
         screen.blit(settings_text, settings_text_rect)
         screen.blit(quit_text, quit_text_rect)
 
         pygame.display.flip()
+
 
 display_menu()
 
@@ -312,11 +310,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-            
+
             # Data you want to save
             data = {'coins': coin_inv, 'otherData': 1, 'etc': 2}
             Serializer.save(data, 'data.pickle')
-                
+
         # Set flags when keys are pressed or released
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
@@ -335,7 +333,6 @@ while running:
                     moving_down = False
                     moving_right = False
 
-
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             if bullet_upgrade == True:
@@ -343,7 +340,7 @@ while running:
                 sound_controller.play_sound(sound_enum.Type.GUN)
                 for bullet_speed_x, bullet_speed_y in bullet_speeds:
                     new_bullet = pygame.Rect(gunny_rect.left, gunny_rect.centery - 30 - gun.bullet_height // 2,
-                                                 gun.bullet_width, gun.bullet_height)
+                                             gun.bullet_width, gun.bullet_height)
                     gun.bullets.append((new_bullet, (bullet_speed_x, bullet_speed_y)))
             else:
                 bullet_speed_x, bullet_speed_y = gun.shoot1(gunny_rect, mouse_x, mouse_y)
@@ -368,8 +365,6 @@ while running:
     elapsed_time = pygame.time.get_ticks() - start_time
     minutes = elapsed_time // 60000
     seconds = (elapsed_time // 1000) % 60
-
-
 
     if moving_left:
         next_player_rect = player_render_rect.move(-player_speed, 0)
@@ -426,14 +421,12 @@ while running:
     if skele_index >= len(skeleanimlist):
         skele_index = 0
 
-
     if not playing_backgroundmusic:
         music_controller.play()
         playing_backgroundmusic = True
-###CAMERA####
+    ###CAMERA####
 
     camera.center = player_rect.center
-
 
     nomad_render_rect = nomad_rect.move(-camera.x, -camera.y)
     player_render_rect = player_rect.move(-camera.x, -camera.y)
@@ -445,11 +438,11 @@ while running:
     shop_text_rect = shop_text_surf.get_rect(center=(730, 552))
 
     screen.fill((70, 192, 236))
-    
+
     for tile in map_controller.tile_list:
-        tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
+        tile.pos(WIDTH // 2 + camera.x, HEIGHT // 2 + camera.y)
     map_controller.tile_list.draw(screen)
-    
+
     for snail in snails:
         snail.move_towards_target(camera, map_controller.tile_list)
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
@@ -479,8 +472,6 @@ while running:
         coin_inv += 1
     coin_inv_text_surf = font.render(": " + str(coin_inv), False, (255, 255, 255))
 
-
-
     mouse_pos = pygame.mouse.get_pos()
     dx = mouse_pos[0] - (player_render_rect.x + player_rect.width)
     dy = mouse_pos[1] - (player_render_rect.y)
@@ -489,16 +480,16 @@ while running:
     if mouse_pos[0] < player_render_rect.centerx:
         rotated_gunny_image = pygame.transform.flip(gunny_surf, False, True)
         player_surf = pygame.transform.flip(player_surf, True, False)
-        gunny_offset = (-10,15)
+        gunny_offset = (-10, 15)
         if 100 <= angle <= 150:
-            gunny_offset =(0,-15)
+            gunny_offset = (0, -15)
         if -90 >= angle >= -125:
-            gunny_offset = (0,15)
+            gunny_offset = (0, 15)
     else:
         rotated_gunny_image = gunny_surf
-        gunny_offset = (30,15)
+        gunny_offset = (30, 15)
         if angle >= 25:
-            gunny_offset = (20,-15)
+            gunny_offset = (20, -15)
     rotated_gunny_image = pygame.transform.rotate(rotated_gunny_image, angle)
     gunny_rect = rotated_gunny_image.get_rect()
     gunny_rect.midleft = (player_render_rect.left, player_render_rect.centery)
@@ -538,7 +529,6 @@ while running:
         for coin in coins[:]:
             coins.remove(coin)
 
-
     current_hp_surf = font.render(str(hp) + ("/") + str(max_hp), False, (255, 255, 255))
     current_time_surf = font.render(str(minutes) + (":") + str(seconds).zfill(2), False, (255, 255, 255))
     gun.check_collisions(snails, skeles, camera, coins, coin_rect)
@@ -548,25 +538,25 @@ while running:
     gunny_rect = player_render_rect.move(gunny_offset)
     screen.blit(platform_surf, platform_render_rect)
     screen.blit(rotated_gunny_image, gunny_rect)
-    
+
     doodad_above_player_list = pygame.sprite.Group()
     doodad_behind_player_list = pygame.sprite.Group()
     for doodad in map_controller.doodad_list:
-        doodad.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
+        doodad.pos(WIDTH // 2 + camera.x, HEIGHT // 2 + camera.y)
         if doodad.render_order() == 0:
             doodad_above_player_list.add(doodad)
         else:
             doodad_behind_player_list.add(doodad)
-            
+
     doodad_behind_player_list.draw(screen)
     screen.blit(player_surf, player_render_rect)
     doodad_above_player_list.draw(screen)
-    
+
     screen.blit(palm_surf, (palm_render_rect.x + 300, palm_render_rect.y + 150))
-    screen.blit(coinanimlist[0], (15,570))
+    screen.blit(coinanimlist[0], (15, 570))
     screen.blit(coin_inv_text_surf, (40, 570))
     screen.blit(heart_surf, (15, 540))
-    screen.blit(current_time_surf, (WIDTH//2, 50))
+    screen.blit(current_time_surf, (WIDTH // 2, 50))
     screen.blit(hpbarborder_surface, hpbarborder_rect)
     screen.blit(hpbar_surface, hpbar_rect)
     if player_render_rect.colliderect(nomad_render_rect):

@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Type(Enum):
     SKELETON = ['skele0', 'skele1', 'skele2', 'skele3']
     PLAYER_IDLE = ['playeridle00', 'playeridle01', 'playeridle02']
