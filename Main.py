@@ -449,7 +449,6 @@ while running:
     for tile in map_controller.tile_list:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
     map_controller.tile_list.draw(screen)
-    map_controller.tile_list.draw(screen)
     
     for snail in snails:
         snail.move_towards_target(camera, map_controller.tile_list)
