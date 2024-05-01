@@ -98,6 +98,7 @@ coins = []
 
 def check_col(rect, speed_x, speed_y):
     rect.move(speed_x, speed_y)
+
     for tile_ in map_controller.tile_list:
         tile_.rect.move(camera.topleft)
 
@@ -120,6 +121,7 @@ def spawn_snail_wave(num_snails):
         _snail = Enemy(snail_rect, player_rect)
         _snail.rect = snail_rect
         snails.append(_snail)
+
     global last_wave_time
     last_wave_time = pygame.time.get_ticks()
 
@@ -132,6 +134,7 @@ def spawn_skele_wave(num_skeles):
         _skele = Enemy(skele_rect, player_rect)
         _skele.rect = skele_rect
         skeles.append(_skele)
+
     global last_wave_time
     last_wave_time = pygame.time.get_ticks()
 
@@ -140,6 +143,7 @@ def check_col(rect):
     for tile_ in map_controller.tile_list:
         if tile_.collision and pygame.Rect.colliderect(tile_.rect, rect):
             return True
+
     return False
 
 
@@ -275,6 +279,7 @@ def display_shop():
 
 def display_menu():
     menu_running = True
+
     while menu_running:
         _mouse_x, _mouse_y = pygame.mouse.get_pos()
         mouse_rect = pygame.Rect(_mouse_x, _mouse_y, 1, 1)
@@ -326,6 +331,7 @@ while running:
     player_render_rect = pygame.Rect(0, 0, 0, 0)
 
     clock.tick(60)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -338,12 +344,16 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
                 moving_left = True
+
             if event.key == pygame.K_d:
                 moving_right = True
+
             if event.key == pygame.K_w:
                 moving_up = True
+
             if event.key == pygame.K_s:
                 moving_down = True
+
             if event.key == pygame.K_e:
                 if player_render_rect.colliderect(nomad_render_rect):
                     display_shop()
@@ -354,9 +364,11 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
+
             if bullet_upgrade:
                 bullet_speeds = gun.shoot(gunny_rect, mouse_x, mouse_y, bullet_upgrade2)
                 sound_controller.play_sound(sound_enum.Type.GUN)
+
                 for bullet_speed_x, bullet_speed_y in bullet_speeds:
                     new_bullet = pygame.Rect(gunny_rect.left, gunny_rect.centery - 30 - gun.bullet_height // 2,
                                              gun.bullet_width, gun.bullet_height)
@@ -373,10 +385,13 @@ while running:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 moving_left = False
+
             if event.key == pygame.K_d:
                 moving_right = False
+
             if event.key == pygame.K_w:
                 moving_up = False
+
             if event.key == pygame.K_s:
                 moving_down = False
 
@@ -387,45 +402,53 @@ while running:
 
     if moving_left:
         next_player_rect = player_render_rect.move(-player_speed, 0)
+
         if not check_col(next_player_rect):
             player_rect.x -= player_speed
 
     if moving_right:
         next_player_rect = player_render_rect.move(+player_speed, 0)
+
         if not check_col(next_player_rect):
             player_rect.x += player_speed
 
     if moving_up:
         next_player_rect = player_render_rect.move(0, -player_speed)
+
         if not check_col(next_player_rect):
             player_rect.y -= player_speed
 
     if moving_down:
         next_player_rect = player_render_rect.move(0, +player_speed)
+
         if not check_col(next_player_rect):
             player_rect.y += player_speed
 
     if moving_left:
         player_surf = playerwalkleftlist[int(left_index)]
         left_index += animation_speed
+
         if left_index >= len(playerwalkleftlist):
             left_index = 0
 
     elif moving_right:
         player_surf = playerwalkleftlist[int(left_index)]
         left_index += animation_speed
+
         if left_index >= len(playerwalkleftlist):
             left_index = 0
 
     elif moving_up:
         player_surf = playerwalkleftlist[int(left_index)]
         left_index += animation_speed
+
         if left_index >= len(playerwalkleftlist):
             left_index = 0
 
     elif moving_down:
         player_surf = playerwalkleftlist[int(left_index)]
         left_index += animation_speed
+
         if left_index >= len(playerwalkleftlist):
             left_index = 0
 
@@ -473,6 +496,7 @@ while running:
 
     for tile in map_controller.tile_list:
         tile.pos(WIDTH // 2 + camera.x, HEIGHT // 2 + camera.y)
+
     map_controller.tile_list.draw(screen)
 
     for snail in snails:
@@ -482,6 +506,7 @@ while running:
             snail_surf = pygame.transform.flip(snail_surf, True, False)
 
         screen.blit(snail_surf, snail_render_rect)
+
     for skele in skeles:
         skele.move_towards_target(camera, map_controller.tile_list)
         skele_render_rect = skele.rect.move(-camera.x, -camera.y)
