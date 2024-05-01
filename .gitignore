@@ -1,8 +1,8 @@
 # created by virtualenv automatically
-/__pycache__
+*__pycache__
 include
 Lib
-Scripts
 pyvenv.cfg
 *.DS_Store
 *.pickle
+.idea
