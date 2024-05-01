@@ -16,6 +16,8 @@ import scripts.graphics_enum as graphics_enum
 font = initializer.get_font()
 screen = initializer.get_screen()
 clock = initializer.get_clock()
+HEIGHT = initializer.HEIGHT
+WIDTH = initializer.WIDTH
 
 # Load player images for different states (idle and jump)
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
@@ -306,7 +308,7 @@ display_menu()
 
 running = True
 while running:
-    Clock.tick(60)
+    clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False

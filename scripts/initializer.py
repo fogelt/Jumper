@@ -3,21 +3,23 @@ import pygame
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()
-font = pygame.font.Font(None, 36)
+
+pygame.display.set_caption("Scorch Survival")
 
 WIDTH, HEIGHT = 1400, 1000
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Scorch Survival")
-clock = pygame.time.Clock()
+
+_screen = pygame.display.set_mode((WIDTH, HEIGHT))
+_font = pygame.font.Font(None, 36)
+_clock = pygame.time.Clock()
 
 
 def get_screen():
-    return screen
+    return _screen
 
 
 def get_clock():
-    return clock
+    return _clock
 
 
 def get_font():
-    return font
+    return _font
