@@ -1,5 +1,5 @@
 # created by virtualenv automatically
-/__pycache__
+*__pycache__
 include
 Lib
 pyvenv.cfg
