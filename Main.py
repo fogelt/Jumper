@@ -6,7 +6,6 @@ from gun import *
 from Enemies import *
 import Serializer
 
-
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()
@@ -17,17 +16,13 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Scorch Survival")
 Clock = pygame.time.Clock()
 
-import Graphics
-import Tiles
+import scripts.music_controller as music_controller
+import scripts.sound_controller as sound_controller
+import scripts.graphics_controller as graphics_controller
+import scripts.map_controller as map_controller
 
-shooting_sound = pygame.mixer.Sound("Sounds/revo.mp3")
-coin1sound = pygame.mixer.Sound("Sounds/coin.wav")
-coin2sound = pygame.mixer.Sound("Sounds/coin2.wav")
-coin3sound = pygame.mixer.Sound("Sounds/coin3.wav")
-metal1sound = pygame.mixer.Sound("Sounds/metal-small1.wav")
-metal2sound = pygame.mixer.Sound("Sounds/metal-small2.wav")
-ouch_sound = pygame.mixer.Sound("Sounds/ouch.mp3")
-snail_hit_sound = pygame.mixer.Sound("Sounds/snail_hit.wav")
+import scripts.sound_enum as sound_enum
+import scripts.graphics_enum as graphics_enum
 
 # Load player images for different states (idle and jump)
 heart_surf = pygame.image.load("Graphics/items/heart.png").convert_alpha()
@@ -48,24 +43,23 @@ coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alp
 coin_surf = coinanimlist[0]
 snailanimlist = [pygame.image.load(f"Graphics/foes/snail{i:02d}.png").convert_alpha() for i in range(2)]
 snail_surf = snailanimlist[0]
-skeleanimlist = Graphics.loadList(["skele0", "skele1", "skele2", "skele3"])
+skeleanimlist = graphics_controller.load_list(graphics_enum.Type.SKELETON)
 skele_surf = skeleanimlist[0]
-coinsoundlist = [coin1sound, coin2sound, coin3sound]
-metalsoundlist = [metal1sound, metal2sound]
-playeridlelist = Graphics.loadList(["playeridle00", "playeridle01", "playeridle02"])
-playerwalkleftlist = Graphics.loadList(["playerwalkleft0", "playerwalkleft1", "playerwalkleft2", "playerwalkleft3"])
+
+playeridlelist = graphics_controller.load_list(graphics_enum.Type.PLAYER_IDLE)
+playerwalkleftlist = graphics_controller.load_list(graphics_enum.Type.PLAYER_WALK_LEFT)
 player_idle_surf = playeridlelist[0]
 player_surf = playeridlelist[0]
 player_rect = player_surf.get_rect(center=(800, 800))
 player_speed = 3  # Adjust the player's movement speed
 
-nomad_surf = Graphics.load("nomad")
+nomad_surf = graphics_controller.load(graphics_enum.Type.NOMAD)
 nomad_rect = nomad_surf.get_rect(center=(900,400))
-tent_surf = Graphics.load("tent1")
+tent_surf = graphics_controller.load(graphics_enum.Type.TENT)
 tent_rect = tent_surf.get_rect(center=(910,380))
-palm_surf = Graphics.load("palm")
+palm_surf = graphics_controller.load(graphics_enum.Type.PALM)
 palm_rect = palm_surf.get_rect()
-main_menu_surf = Graphics.load("main_menu2")
+main_menu_surf = graphics_controller.load(graphics_enum.Type.MAIN_MENU)
 main_menu_rect = main_menu_surf.get_rect()
 scorch_surf = pygame.image.load("Graphics/scorch.png")
 platform_surf = pygame.image.load("Graphics/platform.png")
@@ -94,8 +88,7 @@ right_index = 0
 up_index = 0
 down_index = 0
 coin_index = 0
-coinsound_index = 0
-metalsound_index = 0
+
 snail_index = 0
 skele_index = 0
 gun = Gun(screen)
@@ -110,7 +103,7 @@ coins = []
 
 def check_col(rect, speed_x, speed_y):
     next_rect = rect.move(speed_x, speed_y)
-    for tile in Tiles.tile_list:
+    for tile in map_controller.tile_list:
         tile_rect = tile.rect.move(camera.topleft)
 
 data = Serializer.load('data.pickle')
@@ -143,7 +136,7 @@ def spawn_skele_wave(num_skeles):
     last_wave_time = pygame.time.get_ticks()
 
 def check_col(rect):
-    for tile in Tiles.tile_list:
+    for tile in map_controller.tile_list:
         if tile.collision and pygame.Rect.colliderect(tile.rect, rect):
             return True
     return False
@@ -155,7 +148,6 @@ def display_shop():
     global max_hp
     global hp
     global coin_inv
-    global coinsound_index
     global player_speed
     while shop_running:
         for event in pygame.event.get():
@@ -165,26 +157,22 @@ def display_shop():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if mouse_rect.colliderect(up1_border) and bullet_upgrade == False and coin_inv >= 50:
                     coin_inv -=50
-                    coinsoundlist[coinsound_index].play()
-                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
+                    sound_controller.play_random_sound(sound_enum.Type.COIN)
                     bullet_upgrade = True
 
                 if mouse_rect.colliderect(up2_border) and bullet_upgrade == True and bullet_upgrade2 == False and coin_inv >= 100:
                     coin_inv -= 100
-                    coinsoundlist[coinsound_index].play()
-                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
+                    sound_controller.play_random_sound(sound_enum.Type.COIN)
                     bullet_upgrade2 = True
 
                 if mouse_rect.colliderect(up3_border) and max_hp <=200 and coin_inv >=25:
                     coin_inv -=25
-                    coinsoundlist[coinsound_index].play()
-                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
+                    sound_controller.play_random_sound(sound_enum.Type.COIN)
                     max_hp += 10
                     hp += 10
                 if mouse_rect.colliderect(up4_border) and player_speed <= 9 and coin_inv >= 25:
                     coin_inv -= 25
-                    coinsoundlist[coinsound_index].play()
-                    coinsound_index = (coinsound_index + 1) % len(coinsoundlist)
+                    sound_controller.play_random_sound(sound_enum.Type.COIN)
                     player_speed += 1
                 if mouse_rect.colliderect(exit_border):
                     shop_running = False
@@ -352,14 +340,14 @@ while running:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             if bullet_upgrade == True:
                 bullet_speeds = gun.shoot(gunny_rect, mouse_x, mouse_y, bullet_upgrade2)
-                shooting_sound.play()
+                sound_controller.play_sound(sound_enum.Type.GUN)
                 for bullet_speed_x, bullet_speed_y in bullet_speeds:
                     new_bullet = pygame.Rect(gunny_rect.left, gunny_rect.centery - 30 - gun.bullet_height // 2,
                                                  gun.bullet_width, gun.bullet_height)
                     gun.bullets.append((new_bullet, (bullet_speed_x, bullet_speed_y)))
             else:
                 bullet_speed_x, bullet_speed_y = gun.shoot1(gunny_rect, mouse_x, mouse_y)
-                shooting_sound.play()
+                sound_controller.play_sound(sound_enum.Type.GUN)
 
             for bullet, speed in gun.bullets:
                 bullet.x += speed[0]
@@ -440,9 +428,7 @@ while running:
 
 
     if not playing_backgroundmusic:
-        pygame.mixer.music.load("Sounds/caravan.ogg.ogg")
-        pygame.mixer.music.set_volume(1)
-        pygame.mixer.music.play(loops=-1)
+        music_controller.play()
         playing_backgroundmusic = True
 ###CAMERA####
 
@@ -460,19 +446,19 @@ while running:
 
     screen.fill((70, 192, 236))
     
-    for tile in Tiles.tile_list:
+    for tile in map_controller.tile_list:
         tile.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
-    Tiles.tile_list.draw(screen)
-    Tiles.tile_list.draw(screen)
+    map_controller.tile_list.draw(screen)
+    map_controller.tile_list.draw(screen)
     
     for snail in snails:
-        snail.move_towards_target(camera, Tiles.tile_list)
+        snail.move_towards_target(camera, map_controller.tile_list)
         snail_render_rect = snail.rect.move(-camera.x, -camera.y)
         if snail_render_rect.centerx < player_render_rect.centerx:
             snail_surf = pygame.transform.flip(snail_surf, True, False)
         screen.blit(snail_surf, snail_render_rect)
     for skele in skeles:
-        skele.move_towards_target(camera, Tiles.tile_list)
+        skele.move_towards_target(camera, map_controller.tile_list)
         skele_render_rect = skele.rect.move(-camera.x, -camera.y)
         if skele_render_rect.centerx < player_render_rect.centerx:
             skele_surf = pygame.transform.flip(skele_surf, True, False)
@@ -490,8 +476,7 @@ while running:
     index = player_render_rect.collidelist(adjusted_coin_rects)
     if index != -1:
         coins.pop(index)
-        metalsoundlist[metalsound_index].play()
-        metalsound_index = (metalsound_index + 1) % len(metalsoundlist)
+        sound_controller.play_random_sound(sound_enum.Type.METAL)
         coin_inv += 1
     coin_inv_text_surf = font.render(": " + str(coin_inv), False, (255, 255, 255))
 
@@ -531,14 +516,14 @@ while running:
     if index1 != -1 and current_time - last_health_decrease_time >= grace_period:
         hp -= 5
         last_health_decrease_time = current_time
-        ouch_sound.play()
-        snail_hit_sound.play()
+        sound_controller.play_sound(sound_enum.Type.OUCH)
+        sound_controller.play_sound(sound_enum.Type.SNAIL_HIT)
         if hp < 0:
             hp = 0
     if index2 != -1 and current_time - last_health_decrease_time >= grace_period:
         hp -= 10
         last_health_decrease_time = current_time
-        ouch_sound.play()
+        sound_controller.play_sound(sound_enum.Type.OUCH)
         if hp < 0:
             hp = 0
     if hp == 0:
@@ -567,7 +552,7 @@ while running:
     
     doodad_above_player_list = pygame.sprite.Group()
     doodad_behind_player_list = pygame.sprite.Group()
-    for doodad in Tiles.doodad_list:
+    for doodad in map_controller.doodad_list:
         doodad.pos(WIDTH//2 + camera.x,HEIGHT//2 + camera.y)
         if doodad.render_order() == 0:
             doodad_above_player_list.add(doodad)

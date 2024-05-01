@@ -1,8 +1,8 @@
 import pygame
 import csv
-import Graphics
-import TileEnum
-import DoodadEnum
+import scripts.graphics_controller as graphics_controller
+import scripts.tile_enum as tile_enum
+import scripts.doodad_enum as doodad_enum
 
 class Tile(pygame.sprite.Sprite):
     spawn_x = 0
@@ -54,13 +54,13 @@ class Doodad(pygame.sprite.Sprite):
 tile_list = pygame.sprite.Group()
 doodad_list = pygame.sprite.Group()
 
-tile_dict = Graphics.loadDict([type_.name.lower() for type_ in TileEnum.Type])
-doodad_dict = Graphics.loadDict([type_.name.lower() for type_ in DoodadEnum.Type])
+tile_dict = graphics_controller.load_dict([type_.name.lower() for type_ in tile_enum.Type])
+doodad_dict = graphics_controller.load_dict([type_.name.lower() for type_ in doodad_enum.Type])
 
 SQUARE_SIZE = 64
 
 map = []
-with open("tileMap.csv", "r") as file:
+with open("data/tile_map.csv", "r") as file:
     reader = csv.reader(file)
     for row in reader:
         # Assuming each row contains numeric data, convert them to integers or floats
@@ -72,7 +72,7 @@ for row_index, row in enumerate(map):
         image = None
         collision = None
 
-        for tile in TileEnum.Type:
+        for tile in tile_enum.Type:
             if tile.value[0] == value:
                 image = tile_dict[tile.name.lower()]
                 collision = tile.value[1]
@@ -84,7 +84,7 @@ for row_index, row in enumerate(map):
             tile_list.add(tile)
 
 doodadMap = []
-with open("doodadMap.csv", "r") as file:
+with open("data/doodad_map.csv", "r") as file:
     reader = csv.reader(file)
     for row in reader:
         # Assuming each row contains numeric data, convert them to integers or floats
@@ -96,7 +96,7 @@ for row_index, row in enumerate(doodadMap):
         image = None
         layerOffset = None
         collision = None
-        for doodad in DoodadEnum.Type:
+        for doodad in doodad_enum.Type:
             if doodad.value[0] == value:
                 image = doodad_dict[doodad.name.lower()]
                 layerOffset = doodad.value[1]
