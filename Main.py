@@ -1,5 +1,7 @@
 import sys
 
+import pygame.transform
+
 import Serializer
 from Enemies import *
 from gun import *
@@ -32,7 +34,7 @@ hpbarborder_surface = pygame.Surface((max_hp, 9))
 hpbarborder_rect = hpbarborder_surface.get_rect()
 hpbarborder_surface.fill((0, 0, 0))
 last_health_decrease_time = 0
-grace_period = 500
+grace_period = 1000
 gunny_surf = pygame.image.load("Graphics/items/gunny.png").convert_alpha()
 gunny_rect = gunny_surf.get_rect()
 coinanimlist = [pygame.image.load(f"Graphics/items/coin{i:02d}.png").convert_alpha() for i in range(18)]
@@ -56,6 +58,7 @@ tent_rect = tent_surf.get_rect(center=(910, 380))
 palm_surf = graphics_controller.load(graphics_enum.Type.PALM)
 palm_rect = palm_surf.get_rect()
 main_menu_surf = graphics_controller.load(graphics_enum.Type.MAIN_MENU)
+main_menu_surf = pygame.transform.scale(main_menu_surf, (1280, 720))
 main_menu_rect = main_menu_surf.get_rect()
 scorch_surf = pygame.image.load("Graphics/scorch.png")
 platform_surf = pygame.image.load("Graphics/platform.png")
@@ -161,7 +164,33 @@ def display_shop():
                                        player_render_rect):
         pass
 
+def display_pause_menu():
+    pause_running = True
 
+    while pause_running:
+        _mouse_x, _mouse_y = pygame.mouse.get_pos()
+        mouse_rect = pygame.Rect(_mouse_x, _mouse_y, 1, 1)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if mouse_rect.colliderect(quit_border):
+                    pause_running = False
+                    display_menu()
+
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                pause_running = False
+
+        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.6, HEIGHT // 1.13, 300, 35), 0, 5)
+        quit_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.6, HEIGHT // 1.13, 300, 35), 4, 5)
+        quit_text = font.render("Back to main menu", True, (255, 255, 255))
+        quit_text_rect = quit_text.get_rect(center=(WIDTH // 2, HEIGHT // 1.1))
+        screen.blit(player_surf, player_render_rect)
+        screen.blit(quit_text, quit_text_rect)
+
+        pygame.display.flip()
 def display_menu():
     menu_running = True
 
@@ -171,18 +200,18 @@ def display_menu():
         screen.blit(main_menu_surf, main_menu_rect)
         screen.blit(scorch_surf, (400, 30))
 
-        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 2.61, 250, 35), 0, 5)
-        start_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 2.61, 250, 35), 4, 5)
+        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 2.65, 250, 35), 0, 5)
+        start_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 2.65, 250, 35), 4, 5)
         start_text = font.render("Start game", True, (255, 255, 255))
         start_text_rect = start_text.get_rect(center=(WIDTH // 2, HEIGHT // 2.5))
 
-        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 2.18, 250, 35), 0, 5)
-        settings_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 2.18, 250, 35), 4, 5)
+        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 2.23, 250, 35), 0, 5)
+        settings_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 2.23, 250, 35), 4, 5)
         settings_text = font.render("Settings", True, (255, 255, 255))
         settings_text_rect = settings_text.get_rect(center=(WIDTH // 2.03, HEIGHT // 2.1))
 
-        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 1.86, 250, 35), 0, 5)
-        quit_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 1.86, 250, 35), 4, 5)
+        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2.27, HEIGHT // 1.89, 250, 35), 0, 5)
+        quit_border = pygame.draw.rect(screen, (233, 104, 28), (WIDTH // 2.27, HEIGHT // 1.89, 250, 35), 4, 5)
         quit_text = font.render("Quit game", True, (255, 255, 255))
         quit_text_rect = quit_text.get_rect(center=(WIDTH // 2, HEIGHT // 1.8))
 
@@ -206,7 +235,6 @@ def display_menu():
         screen.blit(quit_text, quit_text_rect)
 
         pygame.display.flip()
-
 
 display_menu()
 
@@ -245,6 +273,8 @@ while running:
                     moving_up = False
                     moving_down = False
                     moving_right = False
+            if event.key == pygame.K_ESCAPE:
+                display_pause_menu()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
